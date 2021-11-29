@@ -73,7 +73,7 @@ class Evaluator():
             true_branch = ex.true_br
             false_branch = ex.false_br
             # TODO: Do something with cond, true_branch and false_branch
-            # cond = ...
+            cond = self.evaluate_expr(var_defs, cond)
             true_branch = self.evaluate_expr(var_defs, true_branch)
             false_branch = self.evaluate_expr(var_defs, false_branch)
             result = Ite(cond, true_branch, false_branch)
