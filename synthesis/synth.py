@@ -62,6 +62,26 @@ class Synthesizer():
         # to synthesize hole completions for.
         self.ast = ast
 
+    #  pre-processing call to populate queue and stacks
+    #  what to do with multiple production rules?
+    #  populate queue in order for each production rule
+    #  heuristic - put at the front of the queue?
+    #
+    # dictionary of queues - one queue for each hole
+    # pre-process function (q, ast)
+    #  populate queue with each expression for each production rule
+    #  for each hole, for each production, each expression
+    #  only add production rules if it is the sam type of the hole value
+
+    #  synth_method call - return a mapping of hole to expression
+    # for each hole - pop from the queue - if it's well-formed - add hole : q.pop() to mapping
+    # iterate on the expression and add to the queue
+
+    # Finish preprocessing
+    # function call to expand recursive expression - should return a list of grammar expressions
+
+    # other small methods to expand     
+
     # TODO: implement something that allows you to remember which
     # programs have already been generated.
 
@@ -73,6 +93,9 @@ class Synthesizer():
         **TODO: write a description of your approach in this method.**
         """
         # TODO : complete this method
+        for hole in self.ast.hole_vars():
+            print(self.ast.hole_can_use(hole))
+
         raise Exception("Synth.Synthesizer.synth_method_1 is not implemented.")
 
     def synth_method_2(self,) -> Mapping[str, Expression]:
