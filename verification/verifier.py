@@ -112,6 +112,8 @@ def validator(vars: dict, formula: Expression) -> bool:
 
         # subtraction operator
         elif operator.value == 2:
+            if isinstance(lhs, IntConst) and isinstance(rhs, IntConst):
+                return lhs.value - rhs.value
             if isinstance(lhs, VarExpr) and isinstance(rhs, IntConst):
                 return vars[lhs.name] - rhs.value
             elif isinstance(lhs, IntConst) and isinstance(rhs, VarExpr):
