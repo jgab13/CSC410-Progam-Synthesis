@@ -309,6 +309,7 @@ def validator(vars: dict, formula: Expression) -> bool:
                 return
         # And operator
         elif operator.value == 11:
+            # TODO Add same test cases as Or branch
             if isinstance(lhs, VarExpr) and isinstance(rhs, VarExpr):
                 return And(vars[lhs.name], vars[rhs.name])
             elif isinstance(lhs, Expression) and isinstance(rhs, VarExpr):
@@ -323,8 +324,18 @@ def validator(vars: dict, formula: Expression) -> bool:
 
         # Or operator
         elif operator.value == 12:
+            if isinstance(lhs, BoolConst) and isinstance(rhs, BoolConst):
+                return Or(lhs.value, rhs.value)
+            elif isinstance(lhs, BoolConst) and isinstance(rhs, VarExpr):
+                return Or(lhs.value, vars[rhs.name])
+            elif isinstance(lhs, VarExpr) and isinstance(rhs, BoolConst):
+                return Or(vars[lhs.name], rhs.value)
             if isinstance(lhs, VarExpr) and isinstance(rhs, VarExpr):
                 return Or(vars[lhs.name], vars[rhs.name])
+            elif isinstance(lhs, Expression) and isinstance(rhs, BoolConst):
+                return Or(validator(vars, lhs), rhs.value)
+            elif isinstance(lhs, BoolConst) and isinstance(rhs, Expression):
+                return Or(lhs.value, validator(vars, rhs))
             elif isinstance(lhs, Expression) and isinstance(rhs, VarExpr):
                 return Or(validator(vars, lhs), vars[rhs.name])
             elif isinstance(lhs, VarExpr) and isinstance(rhs, Expression):
