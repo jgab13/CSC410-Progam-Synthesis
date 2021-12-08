@@ -1,0 +1,6 @@
+input x : int;
+input y : int;
+input z : int;
+define hmax : int = x < y ? x : y;
+define c : int = hmax + z; // Var in the rule of G is x or y
+assert ((c <= x + z) && (c <= y + z)) && (c = x + z || c = y + z);

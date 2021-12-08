@@ -1,0 +1,6 @@
+input b : bool;
+input x : int;
+input y : int;
+// Holes 
+define c : bool = x > y;
+assert (b && c);

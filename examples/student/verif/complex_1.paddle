@@ -1,0 +1,7 @@
+input x : int;
+input y : int;
+input b1 : bool;
+input b2 : bool;
+// Holes
+define z : int = x + y;
+assert ((b1 && b2) || (((3 = 1 + 2) ? 3 : 2 ) + 15 = 18 + x) || z = (x + y + 1 - 1) );

@@ -1,0 +1,5 @@
+input x : int;
+input y : int;
+define h : int = x + y + x + y;
+define c : int = h;
+assert (c = (x * 2) + (y * 2));

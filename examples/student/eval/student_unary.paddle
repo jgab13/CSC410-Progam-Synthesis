@@ -1,0 +1,4 @@
+input x : bool;
+input y : int;
+input z : int;
+assert !((y > z));

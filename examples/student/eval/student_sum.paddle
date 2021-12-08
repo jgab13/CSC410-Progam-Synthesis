@@ -1,0 +1,8 @@
+input x : int;
+input y : int;
+input z : int;
+// Holes
+define h : int = x + y;
+define a : int = x + z;
+define c : int = a + h - x;
+assert (c = x + y + z);
