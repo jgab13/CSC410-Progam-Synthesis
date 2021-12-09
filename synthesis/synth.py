@@ -227,7 +227,7 @@ class Synthesizer():
                     if s.check() == sat:
                         model = s.model()
                         # TODO: this method replaces int_i with values from SAT solver model
-                        expr = substitute(expr, model)
+                        expr = self.substitute(expr, model)
                         res[key.name] = expr
                         break
 
