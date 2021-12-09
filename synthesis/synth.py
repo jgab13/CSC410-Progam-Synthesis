@@ -61,7 +61,6 @@ class Synthesizer():
         # The synthesizer is initialized with the program ast it needs
         # to synthesize hole completions for.
         self.ast = ast
-        self.expression.queue = []
         self.intCoutner = 0
     
     def preprocess(self):
@@ -75,10 +74,10 @@ class Synthesizer():
                     continue
                 for production in rule.productions:
                     if(isinstance(production, GrammarVar)):
-                        result[hole.var.name] += self.ast.hole_can_use(hole.var.name)
+                        result[hole.var.name] += [hole.grammar.rules.symbol.type == var.type for var in self.ast.hole_can_use(hole.var.name)]
                     else:
-                        result[hole.var.name] += rule.productions
-            
+                        result[hole.var.name].append(production)
+        
         return result
     
     # Return a list of expanded Expressions
@@ -90,7 +89,13 @@ class Synthesizer():
         def getExpressions(rules: List[ProductionRule], rule_name: str) -> List[Expression]:
             for rule in rules:
                 if(rule.symbol.name == rule_name):
-                    return rule.productions
+                    temp = []
+                    for expression in rule.productions:
+                        if isinstance(expression, GrammarVar):
+                            temp += [rules.symbol.type == var.type for var in self.ast.hole_can_use(hole.var.name)]
+                        else:
+                            temp.append(expression)
+                    return temp
 
             return []
 
