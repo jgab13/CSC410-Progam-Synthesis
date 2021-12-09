@@ -77,7 +77,7 @@ class Synthesizer():
                     continue
                 for production in rule.productions:
                     if(isinstance(production, GrammarVar)):
-                        result[hole.var.name] += [hole.grammar.rules.symbol.type == var.type for var in self.ast.hole_can_use(hole.var.name)]
+                        result[hole.var.name] += [VarExpr(var, var.name) for var in self.ast.hole_can_use(hole.var.name) if rule.symbol.type == var.type]
                     else:
                         result[hole.var.name].append(production)
         
@@ -95,7 +95,7 @@ class Synthesizer():
                     temp = []
                     for expression in rule.productions:
                         if isinstance(expression, GrammarVar):
-                            temp += [rules.symbol.type == var.type for var in self.ast.hole_can_use(hole.var.name)]
+                            temp += [VarExpr(var, var.name) for var in self.ast.hole_can_use(hole.var.name) if rules.symbol.type == var.type]
                         else:
                             temp.append(expression)
                     return temp
@@ -121,7 +121,7 @@ class Synthesizer():
         elif isinstance(production, BinaryExpr):
             # Expand left operand
             if(not self.ast.is_almost_pure_expression(production.left_operand)):
-                left_expressions = getExpressions(rules, production.left_operand)
+                left_expressions = getExpressions(rules, production.left_operand.name)
                 result += [BinaryExpr(production.operator, expre, production.right_operand) for expre in left_expressions]
 
             # Expand right operand
@@ -136,7 +136,7 @@ class Synthesizer():
             result = getExpressions(rules, VarExpr(production).name)
         elif isinstance(production, GrammarInteger):
             # THINGS TODO: What should we do with Integer??
-            intName = 'Int_{self.intCoutner}'
+            intName = f"Int_{self.intCoutner}"
             self.intCoutner += 1
 
             intVar = Variable(intName, 1)
@@ -213,8 +213,8 @@ class Synthesizer():
         res = {}
         # hole variable might be easier - then I can take the name
         s = Solver()
-        for key in self.hole_dict: # key is the variable and I want the name so it is easier to check paddle type
-            expr_list = self.hole_dict[key]
+        for hole in self.ast.holes: # key is the variable and I want the name so it is easier to check paddle type
+            expr_list = self.hole_dict[hole.var.name]
             expr = expr_list.pop(0)
             while not self.ast.is_pure_expression(expr):
                 if self.ast.is_almost_pure_expression(expr):
@@ -228,15 +228,15 @@ class Synthesizer():
                         model = s.model()
                         # TODO: this method replaces int_i with values from SAT solver model
                         expr = self.substitute(expr, model)
-                        res[key.name] = expr
+                        res[hole.var.name] = expr
                         break
 
                 else:
                     # TODO: Requires expand expression
-                    expr_list.extend(self.expand(expr))
+                    expr_list.extend(self.expand(hole, expr))
                     expr = expr_list.pop(0)
                     self.intCoutner = 0
-            res[key.name] = expr
+            res[hole.var.name] = expr
         return res
 
     def synth_method_2(self,) -> Mapping[str, Expression]:

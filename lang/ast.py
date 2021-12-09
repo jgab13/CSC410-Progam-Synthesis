@@ -614,6 +614,12 @@ class Program(Declaration):
             return False
         if isinstance(expr, (GrammarInteger, GrammarVar)):
             return False
+        used_non_decls = expr.uses().difference(
+            self.assigns(), self.inputs)
+        # Expression should contain only input or assigned variables.
+        for non_decls in used_non_decls:
+            if not non_decls.name.startswith("Int_"):
+                return False
         # Check that the children are well formed.
         for child in expr.children():
             if isinstance(child, Expression):
