@@ -166,6 +166,7 @@ class Synthesizer():
 
         elif isinstance(production, VarExpr):
             if(self.ast.is_almost_pure_expression(production)):
+                # Assuming the name of the Integer variable in z3 is VarExpr.name
                 return IntConst(model[Int(production.name)])
         
         return production
