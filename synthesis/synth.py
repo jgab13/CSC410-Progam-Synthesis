@@ -59,7 +59,6 @@ class Synthesizer():
         methods to remember which programs have been synthesized before.
         """
         self.state_number = 0
-        self.state = []
         # The synthesizer is initialized with the program ast it needs
         # to synthesize hole completions for.
         self.ast = ast
@@ -106,10 +105,11 @@ class Synthesizer():
             while not self.ast.is_pure_expression(expr):
                 if self.ast.is_almost_pure_expression(expr):
                     # assumes that there is a state with the variables called int_i, etc.
-                    vars = list(expr.uses()) + self.state
+                    vars = list(expr.uses())
                     varDict = verifier.create_var_dict(vars)
                     clause = verifier.validator(varDict, expr)
-                    s.add(ForAll(vars, clause))
+                    inputVars = [varDict[var.name] for var in self.ast.inputs]
+                    s.add(ForAll(inputVars, clause))
                     if s.check() == sat:
                         model = s.model()
                         # TODO: this method replaces int_i with values from SAT solver model
@@ -126,10 +126,6 @@ class Synthesizer():
                     self.state_number = 0
             res[key.name] = expr
         return res
-        # for hole in self.ast.hole_vars():
-        #     print(self.ast.hole_can_use(hole))
-        #
-        # raise Exception("Synth.Synthesizer.synth_method_1 is not implemented.")
 
     def synth_method_2(self,) -> Mapping[str, Expression]:
         """
