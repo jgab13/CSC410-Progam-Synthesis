@@ -62,6 +62,7 @@ class Synthesizer():
         # to synthesize hole completions for.
         self.ast = ast
         self.expression.queue = []
+        self.intCoutner = 0
     
     def preprocess(self):
         result = {}
@@ -72,16 +73,17 @@ class Synthesizer():
             for rule in hole.grammar.rules:
                 if rule.symbol.type != holeType:
                     continue
-                result[hole.var.name] += rule.productions
+                for production in rule.productions:
+                    if(isinstance(production, GrammarVar)):
+                        result[hole.var.name] += self.ast.hole_can_use(hole.var.name)
+                    else:
+                        result[hole.var.name] += rule.productions
             
         return result
     
     # Return a list of expanded Expressions
     # Pre-condtiion: production is not a pure_experssion, otherwise facing a infinite recursion if in FIFO data structures(Queue)
-    def expand(self, hole: HoleDeclaration, production: Expression, ast: Program) -> List[Expression]:
-        if (ast.is_pure_expression(production)):
-            return [production]
-
+    def expand(self, hole: HoleDeclaration, production: Expression) -> List[Expression]:
         result = []
         rules = hole.grammar.rules
 
@@ -93,47 +95,80 @@ class Synthesizer():
             return []
 
         if isinstance(production, Ite):
-            production.__class__ = Ite
             # Expand the If condition
-            if(not ast.is_pure_expression(production.cond)):
+            if(not self.ast.is_almost_pure_expression(production.cond)):
                 if_expressions = getExpressions(rules, production.cond)
                 result += [Ite(expre, production.true_br, production.false_br) for expre in if_expressions]
             
             # Expand the Then part
-            if(not ast.is_pure_expression(production.true_br)):
+            if(not self.ast.is_almost_pure_expression(production.true_br)):
                 true_expressions = getExpressions(rules, production.true_br)
                 result += [Ite(production.cond, expre, production.false_br) for expre in true_expressions]
 
             # Expand the Else part
-            if(not ast.is_pure_expression(production.false_br)):
+            if(not self.ast.is_almost_pure_expression(production.false_br)):
                 else_expressions = getExpressions(rules, production.false_br)
                 result += [Ite(production.cond, production.true_br, expre) for expre in else_expressions]
 
         elif isinstance(production, BinaryExpr):
-            production.__class__ = BinaryExpr
             # Expand left operand
-            if(not ast.is_pure_expression(production.left_operand)):
+            if(not self.ast.is_almost_pure_expression(production.left_operand)):
                 left_expressions = getExpressions(rules, production.left_operand)
                 result += [BinaryExpr(production.operator, expre, production.right_operand) for expre in left_expressions]
 
             # Expand right operand
-            if(not ast.is_pure_expression(production.right_operand)):
+            if(not self.ast.is_almost_pure_expression(production.right_operand)):
                 right_expressions = getExpressions(rules, production.right_operand)
                 result += [BinaryExpr(production.operator, production.left_operand, expre) for expre in right_expressions]
 
         elif isinstance(production, UnaryExpr):
-            production.__class__ = UnaryExpr
             expressions = getExpressions(rules, production.operand)
             result = [UnaryExpr(production.operator, expre) for expre in expressions]
         elif isinstance(production, VarExpr):
             result = getExpressions(rules, VarExpr(production).name)
         elif isinstance(production, GrammarInteger):
             # THINGS TODO: What should we do with Integer??
-            pass
+            intName = 'Int_{self.intCoutner}'
+            self.intCoutner += 1
+
+            intVar = Variable(intName, 1)
+            intExp = VarExpr(intVar, intName)
+            result = [intExp]
         elif isinstance(production, GrammarVar):
-            result = list(ast.hole_can_use(hole.var.name))
+            # GrammarVar shouldn't appear!
+            pass
 
         return result
+    
+    def substitute(self, model, production: Expression) -> Expression:
+        if(self.ast.is_pure_expression(production)):
+            return production
+        if isinstance(production, Ite):
+            # Expand the If condition
+            return(Ite(self.substitute(production.cond),
+                self.substitute(production.true_br),
+                self.substitute(production.false_br)
+            ))
+                
+
+        elif isinstance(production, BinaryExpr):
+            # Expand left operand
+            return(BinaryExpr(production.operator,
+                self.substitute(production.left_operand),
+                self.substitute(production.right_operand)
+            ))
+                
+
+        elif isinstance(production, UnaryExpr):
+            return(UnaryExpr(production.operator,
+                self.substitute(production.operand)
+            ))
+
+        elif isinstance(production, VarExpr):
+            if(self.ast.is_almost_pure_expression(production)):
+                return IntConst(model[Int(production.name)])
+        
+        return production
 
     #  pre-processing call to populate queue and stacks
     #  what to do with multiple production rules?
