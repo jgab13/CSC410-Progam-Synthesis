@@ -9,6 +9,7 @@ of the assignment.
 from typing import Mapping
 from z3 import *
 from lang.ast import *
+from verification import verifier
 
 
 class Synthesizer():
@@ -57,10 +58,13 @@ class Synthesizer():
         The Synthesizer can have a state or other data attributes and
         methods to remember which programs have been synthesized before.
         """
-        self.state = None
+        self.state_number = 0
+        self.state = []
         # The synthesizer is initialized with the program ast it needs
         # to synthesize hole completions for.
         self.ast = ast
+        # TODO : hole_dict should call preprocessing function to populate hole_dict
+        self.hole_dict = {}
 
     #  pre-processing call to populate queue and stacks
     #  what to do with multiple production rules?
@@ -93,10 +97,39 @@ class Synthesizer():
         **TODO: write a description of your approach in this method.**
         """
         # TODO : complete this method
-        for hole in self.ast.hole_vars():
-            print(self.ast.hole_can_use(hole))
+        res = {}
+        # hole variable might be easier - then I can take the name
+        s = Solver()
+        for key in self.hole_dict: # key is the variable and I want the name so it is easier to check paddle type
+            expr_list = self.hole_dict[key]
+            expr = expr_list.pop(0)
+            while not self.ast.is_pure_expression(expr):
+                if self.ast.is_almost_pure_expression(expr):
+                    # assumes that there is a state with the variables called int_i, etc.
+                    vars = list(expr.uses()) + self.state
+                    varDict = verifier.create_var_dict(vars)
+                    clause = verifier.validator(varDict, expr)
+                    s.add(ForAll(vars, clause))
+                    if s.check() == sat:
+                        model = s.model()
+                        # TODO: this method replaces int_i with values from SAT solver model
+                        # expr = rebuild_expr(expr, model)
+                        res[key.name] = expr
+                        break
 
-        raise Exception("Synth.Synthesizer.synth_method_1 is not implemented.")
+                else:
+                    # TODO: Requires expand expression
+                    # expr_list.extend(self.expand(expr))
+                    expr = expr_list.pop(0)
+                    # Not sure about this - how are we tracking
+                    self.state = []
+                    self.state_number = 0
+            res[key.name] = expr
+        return res
+        # for hole in self.ast.hole_vars():
+        #     print(self.ast.hole_can_use(hole))
+        #
+        # raise Exception("Synth.Synthesizer.synth_method_1 is not implemented.")
 
     def synth_method_2(self,) -> Mapping[str, Expression]:
         """

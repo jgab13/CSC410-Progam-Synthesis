@@ -404,6 +404,18 @@ def validator(vars: dict, formula: Expression) -> bool:
             print("Case unaccounted for")
             return
 
+def create_var_dict(varList: list) -> dict:
+    vars = {}
+    for var in varList:
+        if var.name not in vars:
+            # int
+            if var.type.value == 1:
+                vars[var.name] = Int(var.name)
+            # bool
+            else:
+                vars[var.name] = Bool(var.name)
+    return vars
+
 def is_valid(formula: Expression) -> bool:
     """
     Returns true if the formula is valid.
@@ -419,17 +431,7 @@ def is_valid(formula: Expression) -> bool:
         return formula.value
 
     s = Solver()
-    varSet = formula.uses()
-    # construct variables for sat solver
-    vars = {}
-    for var in varSet:
-        if var.name not in vars:
-            # int
-            if var.type.value == 1:
-                vars[var.name] = Int(var.name)
-            # bool
-            else:
-                vars[var.name] = Bool(var.name)
+    vars = create_var_dict(list(formula.uses()))
     clause = validator(vars, formula)
     # print(clause)
     s.add(Not(clause))

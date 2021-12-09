@@ -604,6 +604,23 @@ class Program(Declaration):
                     return False
         return True
 
+    def is_almost_pure_expression(self, expr: Expression) -> bool:
+        """
+        Check if the expression is a almost pure expression, that is it does
+        not contain any GrammarVar or GrammarInteger or non-terminal from
+        the grammars.
+        """
+        if not isinstance(expr, Expression):
+            return False
+        if isinstance(expr, (GrammarInteger, GrammarVar)):
+            return False
+        # Check that the children are well formed.
+        for child in expr.children():
+            if isinstance(child, Expression):
+                if not self.is_almost_pure_expression(child):
+                    return False
+        return True
+
     def children(self) -> list:
         return self.inputs + self.holes + self.assignments + [self.constraint]
 
