@@ -86,10 +86,13 @@ class Synthesizer():
     # Return a list of expanded Expressions
     # Pre-condtiion: production is not a pure_experssion, otherwise facing a infinite recursion if in FIFO data structures(Queue)
     def expand(self, hole: HoleDeclaration, production: Expression) -> List[Expression]:
+        if(self.ast.is_pure_expression(production)):
+            return [production]
         result = []
         rules = hole.grammar.rules
 
         def getExpressions(rules: List[ProductionRule], rule_name: str) -> List[Expression]:
+            
             for rule in rules:
                 if(rule.symbol.name == rule_name):
                     temp = []
@@ -105,32 +108,32 @@ class Synthesizer():
         if isinstance(production, Ite):
             # Expand the If condition
             if(not self.ast.is_almost_pure_expression(production.cond)):
-                if_expressions = getExpressions(rules, production.cond)
+                if_expressions = self.expand(hole, production.cond)
                 result += [Ite(expre, production.true_br, production.false_br) for expre in if_expressions]
             
             # Expand the Then part
             if(not self.ast.is_almost_pure_expression(production.true_br)):
-                true_expressions = getExpressions(rules, production.true_br)
+                true_expressions = self.expand(hole, production.true_br)
                 result += [Ite(production.cond, expre, production.false_br) for expre in true_expressions]
 
             # Expand the Else part
             if(not self.ast.is_almost_pure_expression(production.false_br)):
-                else_expressions = getExpressions(rules, production.false_br)
+                else_expressions = self.expand(hole, production.false_br)
                 result += [Ite(production.cond, production.true_br, expre) for expre in else_expressions]
 
         elif isinstance(production, BinaryExpr):
             # Expand left operand
             if(not self.ast.is_almost_pure_expression(production.left_operand)):
-                left_expressions = getExpressions(rules, production.left_operand.name)
+                left_expressions = self.expand(hole, production.left_operand.name)
                 result += [BinaryExpr(production.operator, expre, production.right_operand) for expre in left_expressions]
 
             # Expand right operand
             if(not self.ast.is_almost_pure_expression(production.right_operand)):
-                right_expressions = getExpressions(rules, production.right_operand)
+                right_expressions = self.expand(hole, production.right_operand)
                 result += [BinaryExpr(production.operator, production.left_operand, expre) for expre in right_expressions]
 
         elif isinstance(production, UnaryExpr):
-            expressions = getExpressions(rules, production.operand)
+            expressions = self.expand(hole, production.operand)
             result = [UnaryExpr(production.operator, expre) for expre in expressions]
         elif isinstance(production, VarExpr):
             result = getExpressions(rules, VarExpr(production).name)
