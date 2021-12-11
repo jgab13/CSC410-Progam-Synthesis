@@ -39,11 +39,12 @@ def validator(vars: dict, formula: Expression) -> bool:
         # Absolute value operator
         elif operator.value == 2:
             if isinstance(operand, VarExpr):
-                return abs(vars[operand.name])
+                return If(vars[operand.name] > 0, vars[operand.name], -vars[operand.name])
             elif isinstance(operand, IntConst):
-                return abs(operand.value)
+                return If(operand.value > 0, operand.value, -operand.value)
             elif isinstance(operand, Expression):
-                return abs(validator(vars, operand))
+                result = validator(vars, operand)
+                return If(result > 0, result, - result)
             else:
                 print("Unary not - case not account for")
                 print(operand)

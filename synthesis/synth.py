@@ -158,23 +158,23 @@ class Synthesizer():
             return production
         if isinstance(production, Ite):
             # Expand the If condition
-            return(Ite(self.substitute(production.cond),
-                self.substitute(production.true_br),
-                self.substitute(production.false_br)
+            return(Ite(self.substitute(production.cond, model),
+                self.substitute(production.true_br, model),
+                self.substitute(production.false_br, model)
             ))
                 
 
         elif isinstance(production, BinaryExpr):
             # Expand left operand
             return(BinaryExpr(production.operator,
-                self.substitute(production.left_operand),
-                self.substitute(production.right_operand)
+                self.substitute(production.left_operand, model),
+                self.substitute(production.right_operand, model)
             ))
                 
 
         elif isinstance(production, UnaryExpr):
             return(UnaryExpr(production.operator,
-                self.substitute(production.operand)
+                self.substitute(production.operand, model)
             ))
 
         elif isinstance(production, VarExpr):
@@ -243,15 +243,17 @@ class Synthesizer():
                         clause = verifier.validator(varDict, final_constraint_expr)
                         inputVars = [varDict[var.name] for var in self.ast.inputs]
                         s.add(ForAll(inputVars, clause))
-                        if s.check() == sat:
+                        cond = s.check()
+                        if cond == sat:
                             model = s.model()
-                            print(clause)
-                            print(s.check())
-                            print(s.model())
+                            # print(clause)
+                            # print(s.check())
+                            # print(s.model())
                             # TODO: this method replaces int_i with values from SAT solver model
                             expr = self.substitute(expr, model)
                             res[hole.var.name] = expr
                             break
+                        expr = expr_list.pop(0)
 
                 else:
                     # TODO: Requires expand expression
