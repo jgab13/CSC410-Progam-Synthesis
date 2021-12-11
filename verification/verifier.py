@@ -10,6 +10,14 @@ from z3 import *
 from lang.ast import *
 
 def validator(vars: dict, formula: Expression) -> bool:
+    # formula is True or False, 1, 2, etc
+    if isinstance(formula, IntConst) or isinstance(formula, BoolConst):
+        return formula.value
+
+    # formula is 'x' or 'y', then return ex. 'int_x'
+    if isinstance(formula, VarExpr):
+        return vars[formula.name]
+
     # Unary expression case
     if isinstance(formula, UnaryExpr):
         operator = formula.operator
@@ -64,9 +72,19 @@ def validator(vars: dict, formula: Expression) -> bool:
 
         if isinstance(true_br, IntConst) and isinstance(false_br, IntConst):
             return If(validator(vars, cond), true_br.value, false_br.value)
+        elif isinstance(true_br, BoolConst) and isinstance(false_br, BoolConst):
+            return If(validator(vars, cond), true_br.value, false_br.value)
+        elif isinstance(true_br, BoolConst) and isinstance(false_br, IntConst):
+            return If(validator(vars, cond), true_br.value , false_br.value)
+        elif isinstance(true_br, IntConst) and isinstance(false_br, BoolConst):
+            return If(validator(vars, cond), true_br.value , false_br.value)
         elif isinstance(true_br, IntConst) and isinstance(false_br, VarExpr):
             return If(validator(vars, cond), true_br.value , vars[false_br.name])
+        elif isinstance(true_br, BoolConst) and isinstance(false_br, VarExpr):
+            return If(validator(vars, cond), true_br.value , vars[false_br.name])
         elif isinstance(true_br, VarExpr) and isinstance(false_br, IntConst):
+            return If(validator(vars, cond), vars[true_br.name], false_br.value)
+        elif isinstance(true_br, VarExpr) and isinstance(false_br, BoolConst):
             return If(validator(vars, cond), vars[true_br.name], false_br.value)
         elif isinstance(true_br, VarExpr) and isinstance(false_br, VarExpr):
             return If(validator(vars, cond), vars[true_br.name], vars[false_br.name])
@@ -76,8 +94,14 @@ def validator(vars: dict, formula: Expression) -> bool:
             return If(validator(vars, cond), validator(vars, true_br), vars[false_br.name])
         elif isinstance(true_br, IntConst) and isinstance(false_br, Expression):
             return If(validator(vars, cond), true_br.value, validator(vars, false_br))
+        elif isinstance(true_br, BoolConst) and isinstance(false_br, Expression):
+            return If(validator(vars, cond), true_br.value, validator(vars, false_br))
         elif isinstance(true_br, Expression) and isinstance(false_br, IntConst):
             return If(validator(vars, cond), validator(vars, true_br), false_br.value)
+        elif isinstance(true_br, Expression) and isinstance(false_br, BoolConst):
+            cond = validator(vars, cond)
+            true_br = validator(vars, true_br)
+            return If(cond, true_br,false_br.value)
         elif isinstance(true_br, Expression) and isinstance(false_br, Expression):
             return If(validator(vars, cond), validator(vars, true_br), validator(vars, false_br))
         else:
@@ -247,7 +271,9 @@ def validator(vars: dict, formula: Expression) -> bool:
             elif isinstance(lhs, Expression) and isinstance(rhs, VarExpr):
                 return (validator(vars, lhs)) > vars[rhs.name]
             elif isinstance(rhs, Expression) and isinstance(lhs, VarExpr):
-                return vars[lhs.name] > (validator(vars, rhs))
+                lhs = vars[lhs.name]
+                rhs = validator(vars, rhs)
+                return lhs > rhs
             elif isinstance(lhs, Expression) and isinstance(rhs, IntConst):
                 return (validator(vars, lhs)) > rhs.value
             elif isinstance(rhs, Expression) and isinstance(lhs, IntConst):
@@ -342,13 +368,15 @@ def validator(vars: dict, formula: Expression) -> bool:
             elif isinstance(lhs, Expression) and isinstance(rhs, BoolConst):
                 return And(validator(vars, lhs), rhs.value)
             elif isinstance(lhs, BoolConst) and isinstance(rhs, Expression):
-                return And(validator(vars, lhs), rhs.value)
+                return And(lhs.value, validator(vars, rhs))
             elif isinstance(lhs, Expression) and isinstance(rhs, VarExpr):
                 return And(validator(vars, lhs), vars[rhs.name])
             elif isinstance(lhs, VarExpr) and isinstance(rhs, Expression):
                 return And(vars[lhs.name], validator(vars, rhs))
             elif isinstance(lhs, Expression) and isinstance(rhs, Expression):
-                return And(validator(vars, lhs), validator(vars, rhs))
+                lhs = validator(vars, lhs)
+                rhs = validator(vars, rhs)
+                return And(lhs, rhs)
             else:
                 print("And operator unhandled case")
                 return
@@ -427,7 +455,7 @@ def is_valid(formula: Expression) -> bool:
     # use a recursive function for this
 
     # This handles the simple cases of basic_true and basic_false
-    if isinstance(formula, BoolConst):
+    if isinstance(formula, BoolConst) or isinstance(formula, IntConst):
         return formula.value
 
     s = Solver()

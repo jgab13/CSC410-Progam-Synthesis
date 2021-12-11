@@ -9,6 +9,7 @@ of the assignment.
 from typing import Mapping
 from z3 import *
 from lang.ast import *
+from lang.symb_eval import Evaluator
 from verification import verifier
 
 
@@ -65,6 +66,7 @@ class Synthesizer():
         # TODO : hole_dict should call preprocessing function to populate hole_dict
         self.hole_dict = self.preprocess()
         self.intCoutner = 0
+        self.state = {}
     
     def preprocess(self):
         result = {}
@@ -98,7 +100,7 @@ class Synthesizer():
                     temp = []
                     for expression in rule.productions:
                         if isinstance(expression, GrammarVar):
-                            temp += [VarExpr(var, var.name) for var in self.ast.hole_can_use(hole.var.name) if rules.symbol.type == var.type]
+                            temp += [VarExpr(var, var.name) for var in self.ast.hole_can_use(hole.var.name) if rule.symbol.type == var.type]
                         else:
                             temp.append(expression)
                     return temp
@@ -124,7 +126,7 @@ class Synthesizer():
         elif isinstance(production, BinaryExpr):
             # Expand left operand
             if(not self.ast.is_almost_pure_expression(production.left_operand)):
-                left_expressions = self.expand(hole, production.left_operand.name)
+                left_expressions = self.expand(hole, production.left_operand)
                 result += [BinaryExpr(production.operator, expre, production.right_operand) for expre in left_expressions]
 
             # Expand right operand
@@ -142,7 +144,7 @@ class Synthesizer():
             intName = f"Int_{self.intCoutner}"
             self.intCoutner += 1
 
-            intVar = Variable(intName, 1)
+            intVar = Variable(intName, PaddleType.INT)
             intExp = VarExpr(intVar, intName)
             result = [intExp]
         elif isinstance(production, GrammarVar):
@@ -178,7 +180,7 @@ class Synthesizer():
         elif isinstance(production, VarExpr):
             if(self.ast.is_almost_pure_expression(production)):
                 # Assuming the name of the Integer variable in z3 is VarExpr.name
-                return IntConst(model[Int(production.name)])
+                return IntConst(model[Int(production.name)].as_long())
         
         return production
 
@@ -215,24 +217,41 @@ class Synthesizer():
         # TODO : complete this method
         res = {}
         # hole variable might be easier - then I can take the name
-        s = Solver()
         for hole in self.ast.holes: # key is the variable and I want the name so it is easier to check paddle type
             expr_list = self.hole_dict[hole.var.name]
             expr = expr_list.pop(0)
             while not self.ast.is_pure_expression(expr):
                 if self.ast.is_almost_pure_expression(expr):
                     # assumes that there is a state with the variables called int_i, etc.
-                    vars = list(expr.uses())
-                    varDict = verifier.create_var_dict(vars)
-                    clause = verifier.validator(varDict, expr)
-                    inputVars = [varDict[var.name] for var in self.ast.inputs]
-                    s.add(ForAll(inputVars, clause))
-                    if s.check() == sat:
-                        model = s.model()
-                        # TODO: this method replaces int_i with values from SAT solver model
-                        expr = self.substitute(expr, model)
-                        res[hole.var.name] = expr
-                        break
+                    if self.state == {} and len(self.state) < len(self.ast.holes):
+                        expr_list.append(expr)
+                    else:
+                        s = Solver()
+                        vars = list(expr.uses())
+                        for var in self.ast.inputs:
+                            if var not in vars:
+                                vars.append(var)
+                        varDict = verifier.create_var_dict(vars)
+
+                        state_copy = self.state.copy()
+                        # set almost pure expr to hole key
+                        state_copy[hole.var.name] = expr
+                        # Pass in dictionary of valid hole completions to evaluator
+                        evaluator = Evaluator(state_copy)
+                        # Generate assertion expression with valid hole completions substituted into hole defns
+                        final_constraint_expr = evaluator.evaluate(self.ast)
+                        clause = verifier.validator(varDict, final_constraint_expr)
+                        inputVars = [varDict[var.name] for var in self.ast.inputs]
+                        s.add(ForAll(inputVars, clause))
+                        if s.check() == sat:
+                            model = s.model()
+                            print(clause)
+                            print(s.check())
+                            print(s.model())
+                            # TODO: this method replaces int_i with values from SAT solver model
+                            expr = self.substitute(expr, model)
+                            res[hole.var.name] = expr
+                            break
 
                 else:
                     # TODO: Requires expand expression
@@ -240,6 +259,8 @@ class Synthesizer():
                     expr = expr_list.pop(0)
                     self.intCoutner = 0
             res[hole.var.name] = expr
+
+        self.state = res
         return res
 
     def synth_method_2(self,) -> Mapping[str, Expression]:
