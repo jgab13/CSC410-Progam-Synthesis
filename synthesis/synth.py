@@ -368,16 +368,17 @@ class Synthesizer():
             for recur in hole_recurs:
                 # subsitute the recursive VarExpr
                 # Assume self.last_segment[]
-                [new_expr] = self.replace(recur, self.expressions[key], self.last_segments[key])
+                new_expr = self.replace(recur, self.expressions[key], self.last_segments[key])
 
                 # Check duplicate
                 duplicate = False
-                for expr in self.expressions[key]:
-                    if(self.equivalent(expr, new_expr)):
-                        duplicate = True
-                        break
-                if(not duplicate):
-                    new_expr_list.append(new_expr)
+                for new in new_expr:
+                    for expr in self.expressions[key]:
+                        if(self.equivalent(expr, new)):
+                            duplicate = True
+                            break
+                    if(not duplicate):
+                        new_expr_list.append(new_expr)
             
             # Not sure if we want to extend it here or 
             self.expressions[key].extend(new_expr_list)
