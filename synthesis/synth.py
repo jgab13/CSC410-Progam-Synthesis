@@ -272,7 +272,60 @@ class Synthesizer():
         pass
 
     # Repalce the cursive expressions with 
-    def replace(self, recur: Expression, expr_lst: List[Expression]) -> List[Expression]:
+    def replace(self, recur: Expression, expr_lst: List[Expression], last_segment) -> List[Expression]:
+        if isinstance(recur, UnaryExpr):
+            name = recur.operand.name
+            return [UnaryExpr(recur.operator, expr) for expr in expr_list[name][last_segment[name]:]]
+        elif isinstance(recur, BinaryExpr):
+            name_left = recur.left_operand.name
+            name_right = recur.right_operand.name
+            binary_communicative = [1, 3, 6, 11, 12, 13] #Communivative operations: Plus, Times, Equals, And, Or, Not Equals.
+
+            result = []
+            # with new expr from left
+            for expr1 in expr_list[name_left][last_segment[name_left]:]: # Cur branches, only add with new expressions
+                for expr 2 in expr_list[name_right]:
+                    result.append(BinaryExpr(recur.operator, expr1, expr2))
+                    if(recur.operator.value in binary_communicative): # Cut branches, 
+                        result.append(BinaryExpr(recur.operator, expr2, expr1))
+            
+            # with new expr from the right
+            if(name_left != name_right):
+                for expr1 in expr_list[name_right][last_segment[name_right]:]: # Cur branches, only add with new expressions
+                    for expr2 in expr_list[name_left]:
+                        result.append(BinaryExpr(recur.operator, expr1, expr2))
+                        if(recur.operator.value in binary_communicative): # Cut branches, 
+                            result.append(BinaryExpr(recur.operator, expr2, expr1))
+            return result
+
+        elif isinstance(recur, Ite):
+            name_cond = recur.cond.name
+            name_true = recur.true_br.name
+            name_false = recur.false_br.name
+
+            # with new expr from cond
+            for expr_cond in expr_list[name_cond][last_segment[name_cond]:]:
+                for expr_true in expr_list[name_true]:
+                    for expr_false in expr_list[name_false]:
+                        result.append(If(expr_cond, expr_true, expr_false))
+
+            # with new expr from true_br
+            for expr_cond in expr_list[name_cond]:
+                for expr_true in expr_list[name_true][last_segment[name_true]:]:
+                    for expr_false in expr_list[name_false]:
+                        result.append(If(expr_cond, expr_true, expr_false))
+
+            # with new expr from false_br
+            for expr_cond in expr_list[name_cond]:
+                for expr_true in expr_list[name_true]:
+                    for expr_false in expr_list[name_false][last_segment[name_false]:]:
+                        result.append(If(expr_cond, expr_true, expr_false))
+
+            result = []
+
+        elif isinstance(recur, VarExpr):
+            name = recur.name
+            return expr_list[name][last_segment[name]:]
         pass
     
     # Assume recursive expressions are stored in self.recurs: [<holeName>[<ProductionRule>]]
@@ -282,7 +335,8 @@ class Synthesizer():
             new_expr_list = []
             for recur in hole_recurs:
                 # subsitute the recursive VarExpr
-                [new_expr] = self.replace(recur, self.expressions[key])
+                # Assume self.last_segment[]
+                [new_expr] = self.replace(recur, self.expressions[key], self.last_segments[key])
 
                 # Check duplicate
                 duplicate = False
