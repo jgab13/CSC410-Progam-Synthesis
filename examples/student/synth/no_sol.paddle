@@ -1,0 +1,6 @@
+input x : int;
+input y : int;
+input b1 : bool;
+input b2 : bool;
+hole h1 : bool [G : bool -> x > y | Var];
+assert (h1 && !b1 && !b2);

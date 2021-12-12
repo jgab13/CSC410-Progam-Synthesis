@@ -5,15 +5,61 @@ from lang.paddle import parse
 from pathlib import Path
 from random import randint
 import os
+from synthesis.synth import Synthesizer
 from verification.verifier import is_valid
+
+# function for synth test
+ITERATIONS_LIMIT = 2000
+def main_loop_synth_check(method_num, filename):
+    # Parse the input file into an AST
+    ast = parse(filename)
+    # Initialize a Synthesizer with it
+    synt = Synthesizer(ast)
+    # Iterate until a solution is found or iteration limit is reached
+    iteration = 0
+    while iteration < ITERATIONS_LIMIT:
+        iteration += 1
+        # At each call of the methods of the synthesizer a new
+        # hole completion should be returned.
+        if method_num == 3:
+            hole_completions = synt.synth_method_3()
+        elif method_num == 2:
+            hole_completions = synt.synth_method_2()
+        else:
+            hole_completions = synt.synth_method_1()
+        # Evaluate the program with these completions
+        evaluator = Evaluator(hole_completions)
+        final_constraint_expr = evaluator.evaluate(ast)
+        # Verify the program, if it is valid it is a solution!
+        if is_valid(final_constraint_expr):
+            return True
+        # Otherwise the loop continues.
+    return False
+
+def testFile(testcase, filename):
+    testcase.assertTrue(os.path.exists(filename))
+    if not os.path.exists(filename):
+        raise Exception(
+            "TestSynth is looking for %s, which was in the starter code.\
+                 Make sure file exists." % filename)
+    r1 = main_loop_synth_check(1, filename)
+
+    testcase.assertTrue(
+        r1, msg="Method 1 failed to synthesize a solution for %s." % filename)
+    # r2 = main_loop_synth_check(2, filename)
+    # testcase.assertTrue(
+    #     r2, msg="Method 2 failed to synthesize a solution for %s." % filename)
+    # r3 = main_loop_synth_check(3, filename)
+    # testcase.assertTrue(
+    #     r3, msg="Method 3 failed to synthesize a solution for %s." % filename)
 
 
 class TestStudent(unittest.TestCase):
 
     def test_sanity_student(self):
         self.assertTrue(True)
-    
-    # Symbolic Evaluation 
+
+    # Symbolic Evaluation
     def test_eval_mult_to_add(self):
         filename = '%s/examples/student/eval/student_mult_to_add_true.paddle' % Path(
             __file__).parent.parent.absolute()
@@ -78,7 +124,7 @@ class TestStudent(unittest.TestCase):
         lhs = empty.evaluate_expr(model, prog_res.left_operand)
         rhs = empty.evaluate_expr(model, prog_res.right_operand)
         self.assertTrue(eval(str(lhs)) == eval(str(rhs)))
-    
+
     def test_eval_max(self):
         filename = '%s/examples/student/eval/student_max.paddle' % Path(
             __file__).parent.parent.absolute()
@@ -105,7 +151,7 @@ class TestStudent(unittest.TestCase):
         self.assertEqual(prog_res.operator, BinaryOperator.AND)
         # there is only two variables in prog_res
         self.assertEqual(len(prog_res.uses()), 3)
-        
+
     def test_eval_min(self):
         filename = '%s/examples/student/eval/student_min.paddle' % Path(
             __file__).parent.parent.absolute()
@@ -181,7 +227,7 @@ class TestStudent(unittest.TestCase):
         model = {"y": IntConst(3), "z": IntConst(2)}
         op = empty.evaluate_expr(model, prog_res.operand)
         self.assertTrue(eval(str(op)))
-   
+
     # Verifying Programs Test
     def test_verif_simple_false(self):
         filename = '%s/examples/student/verif/simple_false.paddle' % Path(
@@ -226,8 +272,8 @@ class TestStudent(unittest.TestCase):
                 True, "Exception was raised when parsing %s" % filename)
         # Verify
         self.assertTrue(is_valid(final_constraint_expr))
-        
-    
+
+
     def test_verif_mult_to_add(self):
         filename = '%s/examples/student/verif/student_mult_to_add_true.paddle' % Path(
             __file__).parent.parent.absolute()
@@ -253,7 +299,7 @@ class TestStudent(unittest.TestCase):
         except:
             self.assertFalse(
                 True, "Exception was raised when verifying %s" % filename)
-    
+
     def test_verif_ite(self):
         filename = '%s/examples/student/verif/ite.paddle' % Path(
             __file__).parent.parent.absolute()
@@ -274,7 +320,7 @@ class TestStudent(unittest.TestCase):
             self.assertFalse(
                 True, "Exception was raised when parsing %s" % filename)
         # Verify
-        
+
         self.assertTrue(is_valid(final_constraint_expr))
 
     def test_verif_complex1(self):
@@ -297,11 +343,11 @@ class TestStudent(unittest.TestCase):
             self.assertFalse(
                 True, "Exception was raised when parsing %s" % filename)
         # Verify
-        
+
         self.assertTrue(is_valid(final_constraint_expr))
-        
+
     def test_verif_complex2(self):
-        filename = '%s/examples/student/verif/complex_2.paddle' % Path(
+        filename = '%s/examples/student/verif/complex.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
             raise Exception(
@@ -320,5 +366,38 @@ class TestStudent(unittest.TestCase):
             self.assertFalse(
                 True, "Exception was raised when parsing %s" % filename)
         # Verify
-       
+
         self.assertFalse(is_valid(final_constraint_expr))
+
+    # Enumerating Programs Test
+    def test_synth_sum(self):
+        filename = '%s/examples/student/synth/sum.paddle' % (
+            Path(__file__).parent.parent.absolute())
+        testFile(self, filename)
+
+    def test_synth_division(self):
+        filename = '%s/examples/student/synth/div.paddle' % (
+            Path(__file__).parent.parent.absolute())
+        testFile(self, filename)
+
+    def test_synth_ite(self):
+        filename = '%s/examples/student/synth/ite.paddle' % (
+            Path(__file__).parent.parent.absolute())
+        testFile(self, filename)
+
+    def test_no_sol(self):
+        filename = '%s/examples/student/synth/no_sol.paddle' % (
+            Path(__file__).parent.parent.absolute())
+        self.assertTrue(os.path.exists(filename))
+        if not os.path.exists(filename):
+            raise Exception(
+                "TestSynth is looking for %s, which was in the starter code.\
+                     Make sure file exists." % filename)
+        r1 = main_loop_synth_check(1, filename)
+        self.assertFalse(
+            r1, msg="Method 1 failed to synthesize a solution for %s." % filename)
+
+    def test_complex(self):
+        filename = '%s/examples/student/synth/complex.paddle' % (
+            Path(__file__).parent.parent.absolute())
+        testFile(self, filename)

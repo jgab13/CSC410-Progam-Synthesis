@@ -1,0 +1,3 @@
+hole h1 : int [G : int -> G + G | G / G | G * G | - G | 5 ];
+define q : int = h1;
+assert (q = 1);

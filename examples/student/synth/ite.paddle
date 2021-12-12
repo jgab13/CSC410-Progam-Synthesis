@@ -1,0 +1,7 @@
+// Holes
+hole g : int [
+                  G : int -> B ? G + 5 : G | 0;
+                  B : bool -> True | False
+                ];
+define c : int = g;
+assert c = 10;
