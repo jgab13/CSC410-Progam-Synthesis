@@ -82,6 +82,8 @@ class Synthesizer():
                 for production in rule.productions:
                     if(isinstance(production, GrammarVar)):
                         result[hole.var.name] += [VarExpr(var, var.name) for var in self.ast.hole_can_use(hole.var.name) if rule.symbol.type == var.type]
+                    elif(isinstance(production, GrammarInteger)):
+                        result[hole.var.name] += [IntConst(0), production]
                     else:
                         result[hole.var.name].append(production)
 
@@ -296,6 +298,37 @@ class Synthesizer():
 
         self.state = res
         return res
+    
+    # Check equivalent for duplicate check
+    def equivalent(self, exp1: Expression, exp2: Expression) -> bool:
+        pass
+
+    # Repalce the cursive expressions with 
+    def replace(self, recur: Expression, expr_lst: List[Expression]) -> List[Expression]:
+        pass
+    
+    # Assume recursive expressions are stored in self.recurs: [<holeName>[<ProductionRule>]]
+    # Assume resulting expressions are stored in self.expressions [<holeName>[<ProductionRule>]]
+    def extend(self):
+        for key, hole_recurs in self.recurs:
+            new_expr_list = []
+            for recur in hole_recurs:
+                # subsitute the recursive VarExpr
+                [new_expr] = self.replace(recur, self.expressions[key])
+
+                # Check duplicate
+                duplicate = False
+                for expr in self.expressions[key]:
+                    if(self.equivalent(expr, new_expr)):
+                        duplicate = True
+                        break
+                if(not duplicate):
+                    new_expr_list.append(new_expr)
+            
+            # Not sure if we want to extend it here or 
+            self.expressions[key].extend(new_expr_list)
+
+
 
     def synth_method_2(self,) -> Mapping[str, Expression]:
         """
