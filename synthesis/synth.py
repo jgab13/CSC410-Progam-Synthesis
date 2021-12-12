@@ -300,8 +300,26 @@ class Synthesizer():
         return res
     
     # Check equivalent for duplicate check
-    def equivalent(self, exp1: Expression, exp2: Expression) -> bool:
-        pass
+    def equivalent(self, expr1: Expression, expr2: Expression) -> bool:
+        expr1_vars = expr1.uses()
+        expr2_vars = expr2.uses()
+
+        varDict1 = verifier.create_var_dict(expr1_vars)
+        for key in varDict1:
+            varDict1[key] += '_Left'
+
+        varDict2 = verifier.create_var_dict(expr2_vars)
+        for key in varDict2:
+            varDict2[key] += '_Right'
+
+        clause1 = verifier.validator(varDict1, expr1_vars)
+        clause2 = verifier.validator(varDict2, expr2_vars)
+
+        z3Vars = [varDict1[key] for key in varDict1] + [varDict2[key] for key in varDict2]
+        s = Solver()
+        s.add(ForAll(z3Vars, clause1 == clause2))
+        
+        return s.check() == sat
 
     # Repalce the cursive expressions with 
     def replace(self, recur: Expression, expr_lst: List[Expression], last_segment) -> List[Expression]:
