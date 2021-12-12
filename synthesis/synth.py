@@ -67,7 +67,9 @@ class Synthesizer():
         self.hole_dict = self.preprocess()
         self.intCoutner = 0
         self.state = {}
-    
+        # For a different synth method:
+        self.recursive, self.result = self.preprocess_new()
+
     def preprocess(self):
         result = {}
         for hole in self.ast.holes:
@@ -84,9 +86,39 @@ class Synthesizer():
                         result[hole.var.name] += [IntConst(0), production]
                     else:
                         result[hole.var.name].append(production)
-        
+
         return result
-    
+
+    def preprocess_new(self):
+        # production that has recursion
+        recursive = {}
+        # production that don't have recursion, going to use this to build up
+        result = {}
+        # all the variables that belongs to recursive
+        recursive_names = []
+        for hole in self.ast.holes:
+            for rule in hole.grammar.rules:
+                recursive_names.append(rule.symbol.name)
+
+        for hole in self.ast.holes:
+            for rule in hole.grammar.rules:
+                for production in rule.productions:
+                    # populate the dictionary
+                    if hole.var.name not in result:
+                        result[hole.var.name] = []
+                    if hole.var.name not in recursive:
+                        recursive[hole.var.name] = []
+                    appended = False
+                    for var in production.uses():
+                        if var.name in recursive_names:
+                            recursive[hole.var.name].append(production)
+                            appended = True
+                            break
+                    if not appended:
+                        result[hole.var.name].append(production)
+
+        return (recursive, result)
+
     # Return a list of expanded Expressions
     # Pre-condtiion: production is not a pure_experssion, otherwise facing a infinite recursion if in FIFO data structures(Queue)
     def expand(self, hole: HoleDeclaration, production: Expression) -> List[Expression]:
@@ -96,7 +128,7 @@ class Synthesizer():
         rules = hole.grammar.rules
 
         def getExpressions(rules: List[ProductionRule], rule_name: str) -> List[Expression]:
-            
+
             for rule in rules:
                 if(rule.symbol.name == rule_name):
                     temp = []
@@ -114,7 +146,7 @@ class Synthesizer():
             if(not self.ast.is_almost_pure_expression(production.cond)):
                 if_expressions = self.expand(hole, production.cond)
                 result += [Ite(expre, production.true_br, production.false_br) for expre in if_expressions]
-            
+
             # Expand the Then part
             if(not self.ast.is_almost_pure_expression(production.true_br)):
                 true_expressions = self.expand(hole, production.true_br)
@@ -154,7 +186,7 @@ class Synthesizer():
             pass
 
         return result
-    
+
     def substitute(self, production: Expression, model) -> Expression:
         if(self.ast.is_pure_expression(production)):
             return production
@@ -164,7 +196,7 @@ class Synthesizer():
                 self.substitute(production.true_br, model),
                 self.substitute(production.false_br, model)
             ))
-                
+
 
         elif isinstance(production, BinaryExpr):
             # Expand left operand
@@ -172,7 +204,7 @@ class Synthesizer():
                 self.substitute(production.left_operand, model),
                 self.substitute(production.right_operand, model)
             ))
-                
+
 
         elif isinstance(production, UnaryExpr):
             return(UnaryExpr(production.operator,
@@ -183,7 +215,7 @@ class Synthesizer():
             if(self.ast.is_almost_pure_expression(production)):
                 # Assuming the name of the Integer variable in z3 is VarExpr.name
                 return IntConst(model[Int(production.name)].as_long())
-        
+
         return production
 
     #  pre-processing call to populate queue and stacks
@@ -204,7 +236,7 @@ class Synthesizer():
     # Finish preprocessing
     # function call to expand recursive expression - should return a list of grammar expressions
 
-    # other small methods to expand     
+    # other small methods to expand
 
     # TODO: implement something that allows you to remember which
     # programs have already been generated.
