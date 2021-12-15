@@ -52,8 +52,6 @@ class Evaluator():
             operator = ex.operator
             lhs = ex.left_operand
             rhs = ex.right_operand
-            # TODO: Do something with op, lhs and rhs...
-            # op = ...
             lhs = self.evaluate_expr(var_defs, lhs)
             rhs = self.evaluate_expr(var_defs, rhs)
             result = BinaryExpr(operator, lhs, rhs)
@@ -62,8 +60,6 @@ class Evaluator():
         elif isinstance(ex, UnaryExpr):
             operator = ex.operator
             operand = ex.operand
-            # TODO: Do something with op and ope...
-            # op = ...
             operand = self.evaluate_expr(var_defs, operand)
             result = UnaryExpr(operator, operand)
 
@@ -72,7 +68,6 @@ class Evaluator():
             cond = ex.cond
             true_branch = ex.true_br
             false_branch = ex.false_br
-            # TODO: Do something with cond, true_branch and false_branch
             cond = self.evaluate_expr(var_defs, cond)
             true_branch = self.evaluate_expr(var_defs, true_branch)
             false_branch = self.evaluate_expr(var_defs, false_branch)
@@ -81,13 +76,10 @@ class Evaluator():
         # Case 4: ex is a variable
         elif isinstance(ex, VarExpr):
             if ex.var.name in var_defs:
-                # TODO: what do we return if var has a definition?
                 result = var_defs[ex.var.name]
                 # result = None
             elif ex.var.name in self.hole_defs:
-                # TODO: what do we return if var is a hole?
                 result = self.hole_defs[ex.var.name]
-                # result = None
             else:
                 # If a variable has no definition and is not a hole
                 # (.e.g it's an input), then it is unchanged.
