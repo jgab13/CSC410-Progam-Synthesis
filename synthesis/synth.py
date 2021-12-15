@@ -363,6 +363,7 @@ class Synthesizer():
         **TODO: write a description of your approach in this method.**
         """
         # make it constant first
+        constant_save = self.constant.copy()
         for hole in self.constant:
             for prod in self.constant[hole]:
                 # put all constants in front of all vars
@@ -373,7 +374,9 @@ class Synthesizer():
                         const = self.constant[hole][prod].pop(i)
                         self.constant[hole][prod].insert(0, const)
                     i += 1
-        return self.synth_main(2)
+        res = self.synth_main(2)
+        self.constant = constant_save
+        return res
         # raise Exception("Synth.Synthesizer.synth_method_2 is not implemented.")
 
     def synth_method_3(self,) -> Mapping[str, Expression]:
