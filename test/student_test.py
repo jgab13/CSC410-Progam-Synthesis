@@ -8,10 +8,10 @@ import os
 from synthesis.synth import Synthesizer
 from verification.verifier import is_valid
 
-# function for synth test
 ITERATIONS_LIMIT = 2000
 
 
+# function for synth test
 def main_loop_synth_check(method_num, filename):
     # Parse the input file into an AST
     ast = parse(filename)
@@ -77,11 +77,11 @@ class TestStudent(unittest.TestCase):
         self.assertIsInstance(prog_res, Expression)
         # In this particular case, the expression should be a binary expression
         self.assertIsInstance(prog_res, BinaryExpr)
-        # and the operator should be &&
+        # and the operator should be =
         self.assertEqual(prog_res.operator, BinaryOperator.EQUALS)
         # there is only 2 variable in prog_res
         self.assertEqual(len(prog_res.uses()), 2)
-        # Evaluate the expression
+        # Evaluate the expression 5 times with random ints
         for i in range(5):
             model = {
                 "x": IntConst(randint(-55, 55)),
@@ -110,7 +110,7 @@ class TestStudent(unittest.TestCase):
         self.assertEqual(prog_res.operator, BinaryOperator.EQUALS)
         # there is only 3 variables in prog_res
         self.assertEqual(len(prog_res.uses()), 3)
-        # Evaluate the expression
+        # Evaluate the expression 5 times with random ints
         for i in range(5):
             model = {
                 "x": IntConst(randint(-100, 100)),
@@ -221,7 +221,7 @@ class TestStudent(unittest.TestCase):
         self.assertIsInstance(prog_res, Expression)
         # In this particular case, the expression should be a binary expression
         self.assertIsInstance(prog_res, UnaryExpr)
-        # and the operator should be &&
+        # and the operator should be NOT
         self.assertEqual(prog_res.operator, UnaryOperator.NOT)
 
         # there is only 2 variables in prog_res
