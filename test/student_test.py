@@ -8,7 +8,7 @@ import os
 from synthesis.synth import Synthesizer
 from verification.verifier import is_valid
 
-ITERATIONS_LIMIT = 2000
+ITERATIONS_LIMIT = 100000
 
 
 # function for synth test
@@ -46,24 +46,26 @@ def testFile(testcase, filename):
             "TestSynth is looking for %s, which was in the starter code.\
                  Make sure file exists." % filename)
     r1 = main_loop_synth_check(1, filename)
-
-    testcase.assertTrue(
-        r1, msg="Method 1 failed to synthesize a solution for %s." % filename)
-    # r2 = main_loop_synth_check(2, filename)
-    # testcase.assertTrue(
-    #     r2, msg="Method 2 failed to synthesize a solution for %s." % filename)
-    # r3 = main_loop_synth_check(3, filename)
-    # testcase.assertTrue(
-    #     r3, msg="Method 3 failed to synthesize a solution for %s." % filename)
+    testcase.assertTrue(r1, msg="Method 1 failed to synthesize a solution for %s." % filename)
+    r2 = main_loop_synth_check(2, filename)
+    testcase.assertTrue(r2, msg="Method 2 failed to synthesize a solution for %s." % filename)
+    r3 = main_loop_synth_check(3, filename)
+    testcase.assertTrue(r3, msg="Method 3 failed to synthesize a solution for %s." % filename)
 
 
 class TestStudent(unittest.TestCase):
 
     def test_sanity_student(self):
+        """
+        Sanity Check for test student
+        """
         self.assertTrue(True)
 
     # Symbolic Evaluation
     def test_eval_mult_to_add(self):
+        """
+        test to check multiple addition for eval
+        """
         filename = '%s/examples/student/eval/student_mult_to_add_true.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
@@ -93,6 +95,9 @@ class TestStudent(unittest.TestCase):
             self.assertTrue(eval(str(lhs)) == eval(str(rhs)))
 
     def test_eval_sum(self):
+        """
+        test to check sum of variables for eval
+        """
         filename = '%s/examples/student/eval/student_sum.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
@@ -129,6 +134,9 @@ class TestStudent(unittest.TestCase):
         self.assertTrue(eval(str(lhs)) == eval(str(rhs)))
 
     def test_eval_max(self):
+        """
+        test to check maximum of two variables added by another variable for eval
+        """
         filename = '%s/examples/student/eval/student_max.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
@@ -141,7 +149,6 @@ class TestStudent(unittest.TestCase):
                          msg="In %s, we expected exactly 3 inputs." % filename)
         x = VarExpr(prog.inputs[0])
         y = VarExpr(prog.inputs[1])
-        z = VarExpr(prog.inputs[2])
         e1 = BinaryExpr(BinaryOperator.GREATER, x, y)
         e2 = Ite(e1, x, y)
         defined = Evaluator({"hmax": e2})
@@ -156,6 +163,9 @@ class TestStudent(unittest.TestCase):
         self.assertEqual(len(prog_res.uses()), 3)
 
     def test_eval_min(self):
+        """
+        test to check minimum of two variables added by another variable
+        """
         filename = '%s/examples/student/eval/student_min.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
@@ -183,6 +193,9 @@ class TestStudent(unittest.TestCase):
         self.assertEqual(len(prog_res.uses()), 3)
 
     def test_eval_bool(self):
+        """
+        test to check boolean variables for eval
+        """
         filename = '%s/examples/student/eval/student_bool.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
@@ -208,6 +221,9 @@ class TestStudent(unittest.TestCase):
         self.assertFalse(eval(str(lhs)) == eval(str(rhs)))
 
     def test_eval_unary(self):
+        """
+        test to check unary operators for eval
+        """
         filename = '%s/examples/student/eval/student_unary.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
@@ -233,6 +249,9 @@ class TestStudent(unittest.TestCase):
 
     # Verifying Programs Test
     def test_verif_simple_false(self):
+        """
+        Test a simple false case of booleans for verification
+        """
         filename = '%s/examples/student/verif/simple_false.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
@@ -255,6 +274,9 @@ class TestStudent(unittest.TestCase):
         self.assertFalse(is_valid(final_constraint_expr))
 
     def test_verif_simple_true(self):
+        """
+        Test a simple true case of booleans for verification
+        """
         filename = '%s/examples/student/verif/simple_true.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
@@ -277,6 +299,9 @@ class TestStudent(unittest.TestCase):
         self.assertTrue(is_valid(final_constraint_expr))
 
     def test_verif_mult_to_add(self):
+        """
+        test to check multiple addition for verification
+        """
         filename = '%s/examples/student/verif/student_mult_to_add_true.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
@@ -303,6 +328,9 @@ class TestStudent(unittest.TestCase):
                 True, "Exception was raised when verifying %s" % filename)
 
     def test_verif_ite(self):
+        """
+        test to check if then else for verification
+        """
         filename = '%s/examples/student/verif/ite.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
@@ -326,6 +354,9 @@ class TestStudent(unittest.TestCase):
         self.assertTrue(is_valid(final_constraint_expr))
 
     def test_verif_complex1(self):
+        """
+        test to check a rather complicated case for verification
+        """
         filename = '%s/examples/student/verif/complex_1.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
@@ -349,6 +380,9 @@ class TestStudent(unittest.TestCase):
         self.assertTrue(is_valid(final_constraint_expr))
 
     def test_verif_complex2(self):
+        """
+        test to check a rather complicated case for verification
+        """
         filename = '%s/examples/student/verif/complex.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
@@ -373,21 +407,33 @@ class TestStudent(unittest.TestCase):
 
     # Enumerating Programs Test
     def test_synth_sum(self):
+        """
+        test to check summation to multiplication for synth
+        """
         filename = '%s/examples/student/synth/sum.paddle' % (
             Path(__file__).parent.parent.absolute())
         testFile(self, filename)
 
     def test_synth_division(self):
+        """
+        test to check division for synth
+        """
         filename = '%s/examples/student/synth/div.paddle' % (
             Path(__file__).parent.parent.absolute())
         testFile(self, filename)
 
     def test_synth_ite(self):
+        """
+        test to check if then else for synth
+        """
         filename = '%s/examples/student/synth/ite.paddle' % (
             Path(__file__).parent.parent.absolute())
         testFile(self, filename)
 
     def test_no_sol(self):
+        """
+        test to check case where there is no solution for synth
+        """
         filename = '%s/examples/student/synth/no_sol.paddle' % (
             Path(__file__).parent.parent.absolute())
         self.assertTrue(os.path.exists(filename))
@@ -398,8 +444,17 @@ class TestStudent(unittest.TestCase):
         r1 = main_loop_synth_check(1, filename)
         self.assertFalse(
             r1, msg="Method 1 failed to synthesize a solution for %s." % filename)
+        r2 = main_loop_synth_check(2, filename)
+        self.assertFalse(
+            r2, msg="Method 2 failed to synthesize a solution for %s." % filename)
+        r3 = main_loop_synth_check(3, filename)
+        self.assertFalse(
+            r3, msg="Method 3 failed to synthesize a solution for %s." % filename)
 
     def test_complex(self):
+        """
+        test to check a rather complex case for synth
+        """
         filename = '%s/examples/student/synth/complex.paddle' % (
             Path(__file__).parent.parent.absolute())
         testFile(self, filename)
