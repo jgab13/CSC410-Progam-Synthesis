@@ -10,6 +10,8 @@ from verification.verifier import is_valid
 
 # function for synth test
 ITERATIONS_LIMIT = 2000
+
+
 def main_loop_synth_check(method_num, filename):
     # Parse the input file into an AST
     ast = parse(filename)
@@ -35,6 +37,7 @@ def main_loop_synth_check(method_num, filename):
             return True
         # Otherwise the loop continues.
     return False
+
 
 def testFile(testcase, filename):
     testcase.assertTrue(os.path.exists(filename))
@@ -272,7 +275,6 @@ class TestStudent(unittest.TestCase):
                 True, "Exception was raised when parsing %s" % filename)
         # Verify
         self.assertTrue(is_valid(final_constraint_expr))
-
 
     def test_verif_mult_to_add(self):
         filename = '%s/examples/student/verif/student_mult_to_add_true.paddle' % Path(
