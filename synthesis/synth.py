@@ -321,7 +321,8 @@ class Synthesizer():
                         # There is no more recursive expression that we can expand
                         # We've tried every possible hole_completion
                         # return a dummy data (last output value) instead
-                        res[hole_name] = self.last_output[hole_name]
+                        res_expr = self.last_output[hole_name]
+                        break
                     else:
                         # A do_while loop prevent the preventing VarExpr without constant
                         do_while = True
