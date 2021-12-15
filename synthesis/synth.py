@@ -1,7 +1,6 @@
 """
 CSC410 Final Project: Enumerative Synthesizer
 by Victor Nicolet and Danya Lette
-
 Fill in this file to complete the synthesis portion
 of the assignment.
 """
@@ -19,11 +18,9 @@ class Synthesizer():
     """
     This class is has three methods `synth_method_1`, `synth_method_2` or
     `synth_method_3` for generating expression for a program's holes.
-
     You may also choose to add data attributes and methods to this class
     to enable instances of `Synthesizer` to remember information about
     previous runs.
-
     Calling `synth_method_1`, `synth_method_2` or `synth_method_3` should
     produce a new set of hole completions at each call for a given
     `Synthesizer` instance.
@@ -46,10 +43,8 @@ class Synthesizer():
     Each `synth_method_..` should implement a different enumeration
     strategy (e.g. depth first, breadth first, constants-first,
     variables-first...).
-
     **Don't forget that we expect your third method to be the best on
     average!**
-
     *Hint*: the method `hole_can_use` in the `Program` class returns the
     set of variables that a given hole can use in its completions.
     e.g. `prog.hole_can_use("h1")` returns the variables that "h1" can use.
@@ -75,6 +70,7 @@ class Synthesizer():
         # Output from the previous calls, used for GrammarIntSolver
         self.last_output = {}
 
+        # Prerecursive is the initial recursive expressions
         self.prerecursive, self.constant = self.preprocess()
         self.recursive = copy.deepcopy(self.prerecursive)
 
@@ -169,13 +165,14 @@ class Synthesizer():
         final_constraint_expr = evaluator.evaluate(self.ast)
         clauses = [create_clause(final_constraint_expr, '')]
         input_var = []
-        for var in expr.uses():
-            if(var.type.value == 1):
-                #Int
-                input_var.append(Int(var.name))
-            else:
-                #Bool
-                input_var.append(Bool(var.name))
+        for var in final_constraint_expr.uses():
+            if not var.name.startswith('Int_'):
+                if var.type.value == 1:
+                    #Int
+                    input_var.append(Int(var.name))
+                else:
+                    #Bool
+                    input_var.append(Bool(var.name))
 
         s = Solver()
         # Set div0 and mod0 to be 0
@@ -194,23 +191,6 @@ class Synthesizer():
             return new_expr
         else:
             return None
-
-    def naive_grammarInt(self, expr: Expression) -> Expression:
-        if self.ast.is_pure_expression(expr):
-            return [expr]
-        elif isinstance(expr, UnaryExpr):
-            return [UnaryExpr(expr.operator, e) for e in self.naive_grammarInt(expr.operand)]
-        elif isinstance(expr, BinaryExpr):
-            return [BinaryExpr(expr.operator, lhs, rhs) 
-                    for lhs in self.naive_grammarInt(expr.left_operand) 
-                    for rhs in self.naive_grammarInt(expr.right_operand)]
-        elif isinstance(expr, Ite):
-            return [Ite(cond, true_br, false_br) for cond in self.naive_grammarInt(expr.cond) 
-                    for true_br in self.naive_grammarInt(expr.true_br) 
-                    for false_br in self.naive_grammarInt(expr.false_br)]
-        elif isinstance(GrammarInteger):
-            return [IntConst(i) for i in range (-50, 50)]
-        pass
 
     def expand(self, recur: Expression, hole_name: str) -> List[Expression]:
         """
@@ -303,7 +283,7 @@ class Synthesizer():
             result.append(recur)
 
         return result
-    
+
     def synth_main(self, method: int) -> Mapping[str, Expression]:
         res = {}
 
@@ -356,37 +336,10 @@ class Synthesizer():
         """
         Returns a map from each hole id in the program `self.ast`
         to an expression (method 1).
-
         **TODO: write a description of your approach in this method.**
         """
-        # make it constant first
-        constant_save = copy.deepcopy(self.constant)
-        for hole in self.constant:
-            for prod in self.constant[hole]:
-                # put all constants in front of all vars
-                i = 0
-                while i < len(self.constant[hole][prod]):
-                    if isinstance(self.constant[hole][prod][i], IntConst) or isinstance(self.constant[hole][prod][i], BoolConst):
-                        # put const at the beginning of the list
-                        const = self.constant[hole][prod].pop(i)
-                        self.constant[hole][prod].insert(0, const)
-                    i += 1
-
-        res = self.synth_main(1)
-        self.constant = constant_save
-        return res
-        # raise Exception("Synth.Synthesizer.synth_method_1 is not implemented.")
-
-    def synth_method_2(self,) -> Mapping[str, Expression]:
-        """
-        Returns a map from each hole id in the program `self.ast`
-        to an expression (method 2).
-
-        **TODO: write a description of your approach in this method.**
-        """
-        # TODO : complete this method
         # make it variable first
-        constant_save = copy.deepcopy(self.constant)
+        constant_save = self.constant.copy()
         for hole in self.constant:
             for prod in self.constant[hole]:
                 # put all constants in front of all vars
@@ -398,17 +351,37 @@ class Synthesizer():
                         self.constant[hole][prod].insert(0, var)
                     i += 1
         
-        res = self.synth_main(2)
+        res = self.synth_main(1)
         self.constant = constant_save
         return res
+        # raise Exception("Synth.Synthesizer.synth_method_1 is not implemented.")
+
+    def synth_method_2(self,) -> Mapping[str, Expression]:
+        """
+        Returns a map from each hole id in the program `self.ast`
+        to an expression (method 2).
+        **TODO: write a description of your approach in this method.**
+        """
+        # make it constant first
+        for hole in self.constant:
+            for prod in self.constant[hole]:
+                # put all constants in front of all vars
+                i = 0
+                while i < len(self.constant[hole][prod]):
+                    if isinstance(self.constant[hole][prod][i], IntConst) or isinstance(self.constant[hole][prod][i], BoolConst):
+                        # put const at the beginning of the list
+                        const = self.constant[hole][prod].pop(i)
+                        self.constant[hole][prod].insert(0, const)
+                    i += 1
+        return self.synth_main(2)
         # raise Exception("Synth.Synthesizer.synth_method_2 is not implemented.")
 
     def synth_method_3(self,) -> Mapping[str, Expression]:
         """
         Returns a map from each hole id in the program `self.ast`
         to an expression (method 3).
-
         **TODO: write a description of your approach in this method.**
         """
         # TODO : complete this method
         return self.synth_main(3)
+        raise Exception("Synth.synth_method_3 is not implemented.")

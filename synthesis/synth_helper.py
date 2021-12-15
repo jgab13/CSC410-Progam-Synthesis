@@ -106,7 +106,7 @@ def create_grammarint_expr(expr: Expression, counter: List[int]):
     elif isinstance(expr, VarExpr):
         return expr
     elif isinstance(expr, UnaryExpr):
-        return UnaryExpr(expr.operator, create_grammarint_expr(expr, counter))
+        return UnaryExpr(expr.operator, create_grammarint_expr(expr.operand, counter))
     elif isinstance(expr, BinaryExpr):
         return BinaryExpr(expr.operator,
                           create_grammarint_expr(expr.left_operand, counter),
