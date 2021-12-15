@@ -146,7 +146,7 @@ def sub_int(model, expr: Expression) -> Expression:
                           sub_int(model, expr.left_operand),
                           sub_int(model, expr.right_operand))
     elif isinstance(expr, Ite):
-        return Ite(sub_int(expr.cond),
+        return Ite(sub_int(model, expr.cond),
                    sub_int(model, expr.true_br),
                    sub_int(model, expr.false_br))
 

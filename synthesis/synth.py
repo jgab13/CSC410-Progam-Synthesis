@@ -10,7 +10,9 @@ from typing import Mapping
 from z3 import *
 from lang.ast import *
 from lang.symb_eval import Evaluator
+from synthesis.synth_helper import *
 from verification import verifier
+import copy
 
 
 class Synthesizer():
@@ -63,183 +65,226 @@ class Synthesizer():
         # The synthesizer is initialized with the program ast it needs
         # to synthesize hole completions for.
         self.ast = ast
-        # TODO : hole_dict should call preprocessing function to populate hole_dict
-        self.hole_dict = self.preprocess()
-        self.intCoutner = 0
-        self.state = {}
-        # For a different synth method:
-        self.recursive, self.result = self.preprocess_new()
+
+        # Track the current idx of the expanded recursive expression
+        self.recurIdx = {}
+
+        # A list of stored outputs waiting for synth_method to call
+        self.outputs = {}
+
+        # Output from the previous calls, used for GrammarIntSolver
+        self.last_output = {}
+
+        self.prerecursive, self.constant = self.preprocess()
+        self.recursive = copy.deepcopy(self.prerecursive)
+
+
 
     def preprocess(self):
-        result = {}
-        for hole in self.ast.holes:
-            result[hole.var.name] = []
-            holeType = hole.var.type
-
-            for rule in hole.grammar.rules:
-                if rule.symbol.type != holeType:
-                    continue
-                for production in rule.productions:
-                    if(isinstance(production, GrammarVar)):
-                        result[hole.var.name] += [VarExpr(var, var.name) for var in self.ast.hole_can_use(hole.var.name) if rule.symbol.type == var.type]
-                    elif(isinstance(production, GrammarInteger)):
-                        result[hole.var.name] += [IntConst(0), production]
-                    else:
-                        result[hole.var.name].append(production)
-
-        return result
-
-    def preprocess_new(self):
-        # production that has recursion
+        # Dictionary using hole.var.name as key, rule.symbol.name as second key
+        # storing all recursive expression for expand
         recursive = {}
-        # production that don't have recursion, going to use this to build up
-        result = {}
-        # all the variables that belongs to recursive
-        recursive_names = []
-        for hole in self.ast.holes:
-            for rule in hole.grammar.rules:
-                recursive_names.append(rule.symbol.name)
+
+        # Dictionary using hole.var.name as first key, rule.symbol.name as second
+        # key storing all constant expression for substitution
+        constant = {}
 
         for hole in self.ast.holes:
-            for rule in hole.grammar.rules:
+            hole_name = hole.var.name
+
+            recursive[hole_name] = {}
+            constant[hole_name] = {}
+
+            for rule_indx in range(len(hole.grammar.rules)):
+                rule = hole.grammar.rules[rule_indx]
+                recursive[hole_name][rule.symbol.name] = []
+                constant[hole_name][rule.symbol.name] = []
                 for production in rule.productions:
-                    # populate the dictionary
-                    if hole.var.name not in result:
-                        result[hole.var.name] = []
-                    if hole.var.name not in recursive:
-                        recursive[hole.var.name] = []
-                    appended = False
-                    for var in production.uses():
-                        if var.name in recursive_names:
-                            recursive[hole.var.name].append(production)
-                            appended = True
-                            break
-                    if not appended:
-                        result[hole.var.name].append(production)
+                    # Constant expressions are IntConst, BoolConst, GrammarInt, GrammarVar
+                    if(self.ast.is_pure_expression(production) or
+                            isinstance(production, GrammarInteger) or
+                            isinstance(production, GrammarVar)):
 
-        return (recursive, result)
+                        # Check for GrammarVar
+                        if isinstance(production, GrammarVar):
+                            # Use hole_can_use to get all usable variables, only take same type
+                            valid_vars = [VarExpr(var, var.name)
+                                          for var in self.ast.hole_can_use(hole_name)
+                                          if var.type == rule.symbol.type]
 
-    # Return a list of expanded Expressions
-    # Pre-condtiion: production is not a pure_experssion, otherwise facing a infinite recursion if in FIFO data structures(Queue)
-    def expand(self, hole: HoleDeclaration, production: Expression) -> List[Expression]:
-        if(self.ast.is_pure_expression(production)):
-            return [production]
-        result = []
-        rules = hole.grammar.rules
-
-        def getExpressions(rules: List[ProductionRule], rule_name: str) -> List[Expression]:
-
-            for rule in rules:
-                if(rule.symbol.name == rule_name):
-                    temp = []
-                    for expression in rule.productions:
-                        if isinstance(expression, GrammarVar):
-                            temp += [VarExpr(var, var.name) for var in self.ast.hole_can_use(hole.var.name) if rule.symbol.type == var.type]
+                            constant[hole_name][rule.symbol.name].extend(valid_vars)
                         else:
-                            temp.append(expression)
-                    return temp
+                            constant[hole_name][rule.symbol.name].append(production)
+                    else:
+                        recursive[hole_name][rule.symbol.name].append(production)
 
-            return []
+            # If there's any GrammarInteger in the constant
+            if any(isinstance(expr, GrammarInteger) for expr in constant[hole_name][rule.symbol.name]):
+                # Some basic pruning for GrammarInt:
+                # 1. Remove all other InstConst
+                # 2. If GrammarInt is the only constant, add a IntConst(0) for GrammarIntSolver (Scrach)
+                # 2. Maybe design a special case in grammarIntSolver if int is the only constant
+                constant[hole_name][rule.symbol.name] =\
+                    [expr for expr in constant[hole_name][rule.symbol.name] if not isinstance(expr, IntConst)]
 
-        if isinstance(production, Ite):
-            # Expand the If condition
-            if(not self.ast.is_almost_pure_expression(production.cond)):
-                if_expressions = self.expand(hole, production.cond)
-                result += [Ite(expre, production.true_br, production.false_br) for expre in if_expressions]
+            # Initialize self.outputs and self.recurIdx
+            self.recurIdx[hole_name] = 0
+            main_prod_name = hole.grammar.rules[0].symbol.name
+            self.outputs[hole_name] = []
+            self.outputs[hole_name].extend(constant[hole_name][main_prod_name])
 
-            # Expand the Then part
-            if(not self.ast.is_almost_pure_expression(production.true_br)):
-                true_expressions = self.expand(hole, production.true_br)
-                result += [Ite(production.cond, expre, production.false_br) for expre in true_expressions]
 
-            # Expand the Else part
-            if(not self.ast.is_almost_pure_expression(production.false_br)):
-                else_expressions = self.expand(hole, production.false_br)
-                result += [Ite(production.cond, production.true_br, expre) for expre in else_expressions]
+            # Initialize self.last_output
+            self.last_output[hole_name] = None
 
-        elif isinstance(production, BinaryExpr):
-            # Expand left operand
-            if(not self.ast.is_almost_pure_expression(production.left_operand)):
-                left_expressions = self.expand(hole, production.left_operand)
-                result += [BinaryExpr(production.operator, expre, production.right_operand) for expre in left_expressions]
+        return recursive, constant
 
-            # Expand right operand
-            if(not self.ast.is_almost_pure_expression(production.right_operand)):
-                right_expressions = self.expand(hole, production.right_operand)
-                result += [BinaryExpr(production.operator, production.left_operand, expre) for expre in right_expressions]
+    def grammarIntSolver(self, expr: Expression, hole_name: str) -> Expression:
+        """
+        Given a almost pure expression (pure expression except having garmmarInt),
+        solve for the integer value using z3
+        Return a solved expression, None if unsat (no solution)
+        """
+        # raise NotImplementedError
 
-        elif isinstance(production, UnaryExpr):
-            expressions = self.expand(hole, production.operand)
-            result = [UnaryExpr(production.operator, expre) for expre in expressions]
-        elif isinstance(production, VarExpr):
-            result = getExpressions(rules, VarExpr(production).name)
-        elif isinstance(production, GrammarInteger):
-            # THINGS TODO: What should we do with Integer??
-            intName = f"Int_{self.intCoutner}"
-            self.intCoutner += 1
+        sub_state = self.last_output.copy()
 
-            intVar = Variable(intName, PaddleType.INT)
-            intExp = VarExpr(intVar, intName)
-            result = [intExp]
-        elif isinstance(production, GrammarVar):
-            # GrammarVar shouldn't appear!
-            pass
+        counter = [0]
+        grammarint_expr = create_grammarint_expr(expr, counter)
+        sub_state[hole_name] = grammarint_expr
+
+        # Check if there's a hole hasn't output
+        for key in sub_state:
+            # key is hole_name
+            if sub_state[key] is None:
+                # key hasn't output
+                # Get the name of the main production
+                empty_main_prod_name = \
+                    [hole.grammar.rules[0].symbol.name for hole in self.ast.holes if hole.var.name == key][0]
+                sub_state[key] = self.constant[key][empty_main_prod_name][0]
+                if isinstance(sub_state[key], GrammarInteger):
+                    sub_state[key] = IntConst(1)
+
+        evaluator = Evaluator(sub_state)
+        final_constraint_expr = evaluator.evaluate(self.ast)
+        clauses = [create_clause(final_constraint_expr, '')]
+        input_var = []
+        for var in expr.uses():
+            if(var.type.value == 1):
+                #Int
+                input_var.append(Int(var.name))
+            else:
+                #Bool
+                input_var.append(Bool(var.name))
+
+        s = Solver()
+        # Set div0 and mod0 to be 0
+        x = Int('x')
+        clauses.append(x / 0 == 0)
+        clauses.append(x % 0 == 0)
+ 
+        s.add(ForAll(input_var, And(clauses)))
+        
+        # Set a 0.5 second timer on z3 solver
+        s.set("timeout", 500)
+
+        if s.check() == sat:
+            model = s.model()
+            new_expr = sub_int(model, grammarint_expr)
+            return new_expr
+        else:
+            return None
+
+    def expand(self, recur: Expression, hole_name: str) -> List[Expression]:
+        """
+        Given a recursive expression, name of the current hole.
+        Expand the expression into more recursive expressions, return a list of expanded experssiosn
+        Call expand and substitute together when self.output[hole] is empty??
+        Please call equality check outside
+        """
+        if self.ast.is_pure_expression(recur):
+            return [recur]
+
+        result = []
+        if isinstance(recur, VarExpr):
+            # If the expressions is just the recursive var
+            name = recur.var.name
+            result.extend(self.prerecursive[hole_name][name])
+        elif isinstance(recur, UnaryExpr):
+            # Expand recursively on the unary operand
+            for expr in self.expand(recur.operand, hole_name):
+                result.append(UnaryExpr(recur.operator, expr))
+        elif isinstance(recur, BinaryExpr):
+            # Note simple pruning can be added for:
+            # If two operands are the same and the operator is commutative (add, multiply, equality etc.)
+            commutative = [1, 3, 6, 10, 11, 12, 13]
+            if(str(recur.left_operand) == str(recur.right_operand)
+                    and recur.operator.value in commutative):
+                for expr in self.expand(recur.left_operand, hole_name):
+                    result.append(BinaryExpr(recur.operator, expr, recur.right_operand))
+            else:
+                # Expand recursively on the left operand
+                for expr in self.expand(recur.left_operand, hole_name):
+                    result.append(BinaryExpr(recur.operator, expr, recur.right_operand))
+                # Expand recursively on the right operand
+                for expr in self.expand(recur.right_operand, hole_name):
+                    result.append(BinaryExpr(recur.operator, recur.left_operand, expr))
+        elif isinstance(recur, Ite):
+            # Expand recursively on the condition
+            for expr in self.expand(recur.cond, hole_name):
+                result.append(Ite(expr, recur.true_br, recur.false_br))
+
+            # Expand recursively on the true branch
+            for expr in self.expand(recur.true_br, hole_name):
+                result.append(Ite(recur.cond, expr, recur.false_br))
+
+            # Expand recursively on the false branch
+            for expr in self.expand(recur.false_br, hole_name):
+                result.append(Ite(recur.cond, recur.true_br, expr))
+        else:
+            # Only reach here if the intial grammar_expression has none fully recursive expression
+            # Such as (True ? G : G) or (2 > G)
+            result.append(recur)
 
         return result
 
-    def substitute(self, production: Expression, model) -> Expression:
-        if(self.ast.is_pure_expression(production)):
-            return production
-        if isinstance(production, Ite):
-            # Expand the If condition
-            return(Ite(self.substitute(production.cond, model),
-                self.substitute(production.true_br, model),
-                self.substitute(production.false_br, model)
-            ))
+    def substitute(self, recur: Expression, hole_name: str) -> List[Expression]:
+        """
+        Given a recursive defined expression, substitute all constant in it
+        Return a list of substituted expression
+        """
+        if self.ast.is_pure_expression(recur):
+            return [recur]
 
+        result = []
+        if isinstance(recur, VarExpr):
+            # Example: "G" -> [x,y]
+            result = self.constant[hole_name][recur.var.name]
 
-        elif isinstance(production, BinaryExpr):
-            # Expand left operand
-            return(BinaryExpr(production.operator,
-                self.substitute(production.left_operand, model),
-                self.substitute(production.right_operand, model)
-            ))
+        elif isinstance(recur, UnaryExpr):
+            # Substitute recursively on the unary operand
+            for expr in self.substitute(recur.operand, hole_name):
+                result.append(UnaryExpr(recur.operator, expr))
 
+        elif isinstance(recur, BinaryExpr):
+            # Substitute recursively on both side
+            for lhs_expr in self.substitute(recur.left_operand, hole_name):
+                for rhs_expr in self.substitute(recur.right_operand, hole_name):
+                    result.append(BinaryExpr(recur.operator, lhs_expr, rhs_expr))
+                    # Similarly, some simple pruning can be added here
 
-        elif isinstance(production, UnaryExpr):
-            return(UnaryExpr(production.operator,
-                self.substitute(production.operand, model)
-            ))
+        elif isinstance(recur, Ite):
+            # Substitute recursively on all three expressions
+            for cond_expr in self.substitute(recur.cond, hole_name):
+                for true_expr in self.substitute(recur.true_br, hole_name):
+                    for false_expr in self.substitute(recur.false_br, hole_name):
+                        result.append(Ite(cond_expr, true_expr, false_expr))
 
-        elif isinstance(production, VarExpr):
-            if(self.ast.is_almost_pure_expression(production)):
-                # Assuming the name of the Integer variable in z3 is VarExpr.name
-                return IntConst(model[Int(production.name)].as_long())
+        else:
+            # Only reach here if the intial grammar_expression has none fully recursive expression
+            result.append(recur)
 
-        return production
-
-    #  pre-processing call to populate queue and stacks
-    #  what to do with multiple production rules?
-    #  populate queue in order for each production rule
-    #  heuristic - put at the front of the queue?
-    #
-    # dictionary of queues - one queue for each hole
-    # pre-process function (q, ast)
-    #  populate queue with each expression for each production rule
-    #  for each hole, for each production, each expression
-    #  only add production rules if it is the sam type of the hole value
-
-    #  synth_method call - return a mapping of hole to expression
-    # for each hole - pop from the queue - if it's well-formed - add hole : q.pop() to mapping
-    # iterate on the expression and add to the queue
-
-    # Finish preprocessing
-    # function call to expand recursive expression - should return a list of grammar expressions
-
-    # other small methods to expand
-
-    # TODO: implement something that allows you to remember which
-    # programs have already been generated.
+        return result
 
     def synth_method_1(self,) -> Mapping[str, Expression]:
         """
@@ -249,159 +294,7 @@ class Synthesizer():
         **TODO: write a description of your approach in this method.**
         """
         # TODO : complete this method
-        res = {}
-        # hole variable might be easier - then I can take the name
-        for hole in self.ast.holes: # key is the variable and I want the name so it is easier to check paddle type
-            expr_list = self.hole_dict[hole.var.name]
-            expr = expr_list.pop(0)
-            while not self.ast.is_pure_expression(expr):
-                if self.ast.is_almost_pure_expression(expr):
-                    # assumes that there is a state with the variables called int_i, etc.
-                    if self.state == {} and len(self.state) < len(self.ast.holes):
-                        expr_list.append(expr)
-                    else:
-                        s = Solver()
-                        vars = list(expr.uses())
-                        for var in self.ast.inputs:
-                            if var not in vars:
-                                vars.append(var)
-                        varDict = verifier.create_var_dict(vars)
-
-                        state_copy = self.state.copy()
-                        # set almost pure expr to hole key
-                        state_copy[hole.var.name] = expr
-                        # Pass in dictionary of valid hole completions to evaluator
-                        evaluator = Evaluator(state_copy)
-                        # Generate assertion expression with valid hole completions substituted into hole defns
-                        final_constraint_expr = evaluator.evaluate(self.ast)
-                        clause = verifier.validator(varDict, final_constraint_expr)
-                        inputVars = [varDict[var.name] for var in self.ast.inputs]
-                        s.add(ForAll(inputVars, clause))
-                        cond = s.check()
-                        if cond == sat:
-                            model = s.model()
-                            # print(clause)
-                            # print(s.check())
-                            # print(s.model())
-                            # TODO: this method replaces int_i with values from SAT solver model
-                            expr = self.substitute(expr, model)
-                            res[hole.var.name] = expr
-                            break
-                        expr = expr_list.pop(0)
-
-                else:
-                    # TODO: Requires expand expression
-                    expr_list.extend(self.expand(hole, expr))
-                    expr = expr_list.pop(0)
-                    self.intCoutner = 0
-            res[hole.var.name] = expr
-
-        self.state = res
-        return res
-    
-    # Check equivalent for duplicate check
-    def equivalent(self, expr1: Expression, expr2: Expression) -> bool:
-        expr1_vars = expr1.uses()
-        expr2_vars = expr2.uses()
-
-        varDict1 = verifier.create_var_dict(expr1_vars)
-        for key in varDict1:
-            varDict1[key] += '_Left'
-
-        varDict2 = verifier.create_var_dict(expr2_vars)
-        for key in varDict2:
-            varDict2[key] += '_Right'
-
-        clause1 = verifier.validator(varDict1, expr1_vars)
-        clause2 = verifier.validator(varDict2, expr2_vars)
-
-        z3Vars = [varDict1[key] for key in varDict1] + [varDict2[key] for key in varDict2]
-        s = Solver()
-        s.add(ForAll(z3Vars, clause1 == clause2))
-        
-        return s.check() == sat
-
-    # Repalce the cursive expressions with 
-    def replace(self, recur: Expression, expr_lst: List[Expression], last_segment) -> List[Expression]:
-        if isinstance(recur, UnaryExpr):
-            name = recur.operand.name
-            return [UnaryExpr(recur.operator, expr) for expr in expr_list[name][last_segment[name]:]]
-        elif isinstance(recur, BinaryExpr):
-            name_left = recur.left_operand.name
-            name_right = recur.right_operand.name
-            binary_communicative = [1, 3, 6, 11, 12, 13] #Communivative operations: Plus, Times, Equals, And, Or, Not Equals.
-
-            result = []
-            # with new expr from left
-            for expr1 in expr_list[name_left][last_segment[name_left]:]: # Cur branches, only add with new expressions
-                for expr 2 in expr_list[name_right]:
-                    result.append(BinaryExpr(recur.operator, expr1, expr2))
-                    if(recur.operator.value in binary_communicative): # Cut branches, 
-                        result.append(BinaryExpr(recur.operator, expr2, expr1))
-            
-            # with new expr from the right
-            if(name_left != name_right):
-                for expr1 in expr_list[name_right][last_segment[name_right]:]: # Cur branches, only add with new expressions
-                    for expr2 in expr_list[name_left]:
-                        result.append(BinaryExpr(recur.operator, expr1, expr2))
-                        if(recur.operator.value in binary_communicative): # Cut branches, 
-                            result.append(BinaryExpr(recur.operator, expr2, expr1))
-            return result
-
-        elif isinstance(recur, Ite):
-            name_cond = recur.cond.name
-            name_true = recur.true_br.name
-            name_false = recur.false_br.name
-
-            # with new expr from cond
-            for expr_cond in expr_list[name_cond][last_segment[name_cond]:]:
-                for expr_true in expr_list[name_true]:
-                    for expr_false in expr_list[name_false]:
-                        result.append(If(expr_cond, expr_true, expr_false))
-
-            # with new expr from true_br
-            for expr_cond in expr_list[name_cond]:
-                for expr_true in expr_list[name_true][last_segment[name_true]:]:
-                    for expr_false in expr_list[name_false]:
-                        result.append(If(expr_cond, expr_true, expr_false))
-
-            # with new expr from false_br
-            for expr_cond in expr_list[name_cond]:
-                for expr_true in expr_list[name_true]:
-                    for expr_false in expr_list[name_false][last_segment[name_false]:]:
-                        result.append(If(expr_cond, expr_true, expr_false))
-
-            result = []
-
-        elif isinstance(recur, VarExpr):
-            name = recur.name
-            return expr_list[name][last_segment[name]:]
-        pass
-    
-    # Assume recursive expressions are stored in self.recurs: [<holeName>[<ProductionRule>]]
-    # Assume resulting expressions are stored in self.expressions [<holeName>[<ProductionRule>]]
-    def extend(self):
-        for key, hole_recurs in self.recurs:
-            new_expr_list = []
-            for recur in hole_recurs:
-                # subsitute the recursive VarExpr
-                # Assume self.last_segment[]
-                new_expr = self.replace(recur, self.expressions[key], self.last_segments[key])
-
-                # Check duplicate
-                duplicate = False
-                for new in new_expr:
-                    for expr in self.expressions[key]:
-                        if(self.equivalent(expr, new)):
-                            duplicate = True
-                            break
-                    if(not duplicate):
-                        new_expr_list.append(new_expr)
-            
-            # Not sure if we want to extend it here or 
-            self.expressions[key].extend(new_expr_list)
-
-
+        raise Exception("Synth.Synthesizer.synth_method_1 is not implemented.")
 
     def synth_method_2(self,) -> Mapping[str, Expression]:
         """
@@ -411,7 +304,52 @@ class Synthesizer():
         **TODO: write a description of your approach in this method.**
         """
         # TODO : complete this method
-        raise Exception("Synth.Synthesizer.synth_method_2 is not implemented.")
+        res = {}
+
+        for hole in self.ast.holes:
+            hole_name = hole.var.name
+            main_prod_name = hole.grammar.rules[0].symbol.name
+
+            res_expr = None
+            while res_expr is None:
+                if not self.outputs[hole_name]:
+                    # The output list is empty for this hole
+
+                    # Check if the produciton rules are finite
+                    if self.recurIdx[hole_name] == len(self.recursive[hole_name][main_prod_name]):
+                        # There is no more recursive expression that we can expand
+                        # We've tried every possible hole_completion
+                        # return a dummy data (last output value) instead
+                        res[hole_name] = self.last_output[hole_name]
+                    else:
+                        # A do_while loop prevent the preventing VarExpr without constant
+                        do_while = True
+                        while do_while or not self.outputs[hole_name]:
+                            currRecur = self.recursive[hole_name][main_prod_name][self.recurIdx[hole_name]]
+                            new_recurs = self.expand(currRecur, hole_name)
+
+                            # # Check duplicate
+                            # for new_recur in new_recurs:
+                            #     if not duplicate(new_recur, self.recursive[hole_name][main_prod_name]):
+                            #         self.recursive[hole_name][main_prod_name].append(new_recur)
+                            self.recursive[hole_name][main_prod_name].extend(new_recurs)
+
+                            # Update self.recurIdx
+                            self.recurIdx[hole_name] += 1
+
+                            self.outputs[hole_name] = self.substitute(currRecur, hole_name)
+                            do_while = False
+
+                res_expr = self.outputs[hole_name].pop(0)
+
+                if not self.ast.is_pure_expression(res_expr):
+                    res_expr = self.grammarIntSolver(res_expr, hole_name)
+
+            res[hole_name] = res_expr
+
+        self.last_output = res
+        return res
+        # raise Exception("Synth.Synthesizer.synth_method_2 is not implemented.")
 
     def synth_method_3(self,) -> Mapping[str, Expression]:
         """
