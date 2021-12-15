@@ -176,11 +176,14 @@ class Synthesizer():
 
         s = Solver()
         # Set div0 and mod0 to be 0
-        x = Int('x')
+        x = Int('INTEGER')
         clauses.append(x / 0 == 0)
         clauses.append(x % 0 == 0)
  
-        s.add(ForAll(input_var, And(clauses)))
+        if input_var:
+            s.add(ForAll(input_var, And(clauses)))
+        else:
+            s.add(And(clauses))
         
         # Set a 0.5 second timer on z3 solver
         s.set("timeout", 500)

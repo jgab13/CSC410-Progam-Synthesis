@@ -140,7 +140,7 @@ def sub_int(model, expr: Expression) -> Expression:
         else:
             return expr
     elif isinstance(expr, UnaryExpr):
-        return UnaryExpr(expr.operator, sub_int(model, expr))
+        return UnaryExpr(expr.operator, sub_int(model, expr.operand))
     elif isinstance(expr, BinaryExpr):
         return BinaryExpr(expr.operator,
                           sub_int(model, expr.left_operand),
