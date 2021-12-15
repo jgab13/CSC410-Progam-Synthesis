@@ -270,7 +270,8 @@ class Synthesizer():
             # Substitute recursively on both side
             for lhs_expr in self.substitute(recur.left_operand, hole_name):
                 for rhs_expr in self.substitute(recur.right_operand, hole_name):
-                    result.append(BinaryExpr(recur.operator, lhs_expr, rhs_expr))
+                    if not (str(lhs_expr) == str(rhs_expr) and recur.operator.value in [6,10,11,12,13]):
+                        result.append(BinaryExpr(recur.operator, lhs_expr, rhs_expr))
                     # Similarly, some simple pruning can be added here
 
         elif isinstance(recur, Ite):
