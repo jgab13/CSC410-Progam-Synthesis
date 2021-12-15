@@ -1,0 +1,4 @@
+input x : int;
+hole h1 : int [G : int -> G + 1 | G - 1 | G + G | abs(G) | 0];
+assert (h1 = 25);
+

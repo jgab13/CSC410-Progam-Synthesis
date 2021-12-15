@@ -1,0 +1,5 @@
+input x : int;
+input y : int;
+hole h : int [G : int -> G + G | Var ];
+define c : int = h;
+assert (c = ((x + y) * 2));

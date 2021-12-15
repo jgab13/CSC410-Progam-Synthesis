@@ -9,12 +9,15 @@ Open the documentation in your browser, e.g. open `docs/main.html`.
 
 # Group Members
 
-TODO: Remove me, and write the names and UTORids of the group members.
+Jiongan Mu, mujionga
+Jonathan Gabe, gabejona
+Nanqi Liu, liunanqi
 
 # Roles and Tasks
 
-TODO: Remove me, and write a *very brief* description of what each team member
-did in the project.
+Jiongan worked on testing, style, documentation and synth method helper functions.
+Jonathan worked on symbol eval, verifier and synth method helper functions.
+Nanqi worked on synth method functions. 
 
 ---
 
