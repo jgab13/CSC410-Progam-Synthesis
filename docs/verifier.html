@@ -94,11 +94,7 @@ of the assignment.</p>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operand</span><span class="p">,</span> <span class="n">BoolConst</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">Not</span><span class="p">(</span><span class="n">operand</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operand</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">Not</span><span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">operand</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unary not - case not account for&quot;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">operand</span><span class="p">)</span>
-                <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="n">Not</span><span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">operand</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -117,11 +113,7 @@ of the assignment.</p>
                 <span class="k">return</span> <span class="n">If</span><span class="p">(</span><span class="n">operand</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">operand</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="o">-</span><span class="n">operand</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operand</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
                 <span class="n">result</span> <span class="o">=</span> <span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">operand</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">If</span><span class="p">(</span><span class="n">result</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="o">-</span> <span class="n">result</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unary not - case not account for&quot;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">operand</span><span class="p">)</span>
-                <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="n">If</span><span class="p">(</span><span class="n">result</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="o">-</span> <span class="n">result</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -139,13 +131,7 @@ of the assignment.</p>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operand</span><span class="p">,</span> <span class="n">IntConst</span><span class="p">):</span>
                 <span class="k">return</span> <span class="o">-</span><span class="n">operand</span><span class="o">.</span><span class="n">value</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operand</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
-                <span class="k">return</span> <span class="o">-</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">operand</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unary negate - case not account for&quot;</span><span class="p">)</span>
-                <span class="k">return</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;unhandled unary case&quot;</span><span class="p">)</span>
-            <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="o">-</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">operand</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -195,10 +181,7 @@ of the assignment.</p>
             <span class="n">true_br</span> <span class="o">=</span> <span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">true_br</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">If</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">true_br</span><span class="p">,</span> <span class="n">false_br</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">true_br</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">false_br</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">If</span><span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">cond</span><span class="p">),</span> <span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">true_br</span><span class="p">),</span> <span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">false_br</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unhandled ITE case&quot;</span><span class="p">)</span>
-            <span class="k">return</span></pre></div>
+            <span class="k">return</span> <span class="n">If</span><span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">cond</span><span class="p">),</span> <span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">true_br</span><span class="p">),</span> <span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">false_br</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -243,10 +226,7 @@ of the assignment.</p>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">IntConst</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">lhs</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
-                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;addition operator unhandled case&quot;</span><span class="p">)</span>
-                <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -276,10 +256,7 @@ of the assignment.</p>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">IntConst</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">lhs</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
-                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">-</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;substraction operator unhandled case&quot;</span><span class="p">)</span>
-                <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">-</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -309,10 +286,7 @@ of the assignment.</p>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">IntConst</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">lhs</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
-                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;multiplication operator unhandled case&quot;</span><span class="p">)</span>
-                <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -342,10 +316,7 @@ of the assignment.</p>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">IntConst</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">lhs</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
-                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;division operator unhandled case&quot;</span><span class="p">)</span>
-                <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -375,10 +346,7 @@ of the assignment.</p>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">IntConst</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">lhs</span><span class="o">.</span><span class="n">value</span> <span class="o">%</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
-                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">%</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Modulo operator unhandled case&quot;</span><span class="p">)</span>
-                <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">%</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -408,10 +376,7 @@ of the assignment.</p>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">IntConst</span><span class="p">):</span>
                 <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span> <span class="o">==</span> <span class="n">lhs</span><span class="o">.</span><span class="n">value</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
-                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">==</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;equal operator unhandled case&quot;</span><span class="p">)</span>
-                <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">==</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -443,10 +408,7 @@ of the assignment.</p>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">IntConst</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">lhs</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
-                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Greater than operator unhandled case&quot;</span><span class="p">)</span>
-                <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -476,10 +438,7 @@ of the assignment.</p>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">IntConst</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">lhs</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
-                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Greater than or equal operator unhandled case&quot;</span><span class="p">)</span>
-                <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -509,10 +468,7 @@ of the assignment.</p>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">IntConst</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">lhs</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
-                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Less than operator unhandled case&quot;</span><span class="p">)</span>
-                <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -542,10 +498,7 @@ of the assignment.</p>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">IntConst</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">lhs</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
-                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Less than or equal operator unhandled case&quot;</span><span class="p">)</span>
-                <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -577,10 +530,7 @@ of the assignment.</p>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
                 <span class="n">lhs</span> <span class="o">=</span> <span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">)</span>
                 <span class="n">rhs</span> <span class="o">=</span> <span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">And</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;And operator unhandled case&quot;</span><span class="p">)</span>
-                <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="n">And</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -610,10 +560,7 @@ of the assignment.</p>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">VarExpr</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">Or</span><span class="p">(</span><span class="nb">vars</span><span class="p">[</span><span class="n">lhs</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">Or</span><span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">),</span> <span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Or operator unhandled case&quot;</span><span class="p">)</span>
-                <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="n">Or</span><span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">),</span> <span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -643,13 +590,7 @@ of the assignment.</p>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">IntConst</span><span class="p">):</span>
                 <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span> <span class="o">!=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">value</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
-                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">!=</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;not equal operator unhandled case&quot;</span><span class="p">)</span>
-                <span class="k">return</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Case unaccounted for&quot;</span><span class="p">)</span>
-            <span class="k">return</span></pre></div>
+                <span class="k">return</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">lhs</span><span class="p">))</span> <span class="o">!=</span> <span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">rhs</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>

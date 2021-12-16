@@ -32,10 +32,6 @@ def validator(vars: dict, formula: Expression) -> bool:
                 return Not(operand.value)
             elif isinstance(operand, Expression):
                 return Not(validator(vars, operand))
-            else:
-                print("Unary not - case not account for")
-                print(operand)
-                return
 
         # Absolute value operator
         elif operator.value == 2:
@@ -46,10 +42,6 @@ def validator(vars: dict, formula: Expression) -> bool:
             elif isinstance(operand, Expression):
                 result = validator(vars, operand)
                 return If(result > 0, result, - result)
-            else:
-                print("Unary not - case not account for")
-                print(operand)
-                return
 
         # Negative operator
         elif operator.value == 3:
@@ -59,12 +51,6 @@ def validator(vars: dict, formula: Expression) -> bool:
                 return -operand.value
             elif isinstance(operand, Expression):
                 return -validator(vars, operand)
-            else:
-                print("Unary negate - case not account for")
-                return
-        else:
-            print("unhandled unary case")
-            return
 
     # If then else Expression case
     if isinstance(formula, Ite):
@@ -106,9 +92,6 @@ def validator(vars: dict, formula: Expression) -> bool:
             return If(cond, true_br, false_br.value)
         elif isinstance(true_br, Expression) and isinstance(false_br, Expression):
             return If(validator(vars, cond), validator(vars, true_br), validator(vars, false_br))
-        else:
-            print("Unhandled ITE case")
-            return
 
     # Binary Expression case
     if isinstance(formula, BinaryExpr):
@@ -136,9 +119,6 @@ def validator(vars: dict, formula: Expression) -> bool:
                 return lhs.value + (validator(vars, rhs))
             elif isinstance(lhs, Expression) and isinstance(rhs, Expression):
                 return (validator(vars, lhs)) + (validator(vars, rhs))
-            else:
-                print("addition operator unhandled case")
-                return
 
         # subtraction operator
         elif operator.value == 2:
@@ -160,9 +140,6 @@ def validator(vars: dict, formula: Expression) -> bool:
                 return lhs.value - (validator(vars, rhs))
             elif isinstance(lhs, Expression) and isinstance(rhs, Expression):
                 return (validator(vars, lhs)) - (validator(vars, rhs))
-            else:
-                print("substraction operator unhandled case")
-                return
 
         # Multiplication operator
         elif operator.value == 3:
@@ -184,9 +161,6 @@ def validator(vars: dict, formula: Expression) -> bool:
                 return lhs.value * (validator(vars, rhs))
             elif isinstance(lhs, Expression) and isinstance(rhs, Expression):
                 return (validator(vars, lhs)) * (validator(vars, rhs))
-            else:
-                print("multiplication operator unhandled case")
-                return
 
         # Division operator
         elif operator.value == 4:
@@ -208,9 +182,6 @@ def validator(vars: dict, formula: Expression) -> bool:
                 return lhs.value / (validator(vars, rhs))
             elif isinstance(lhs, Expression) and isinstance(rhs, Expression):
                 return (validator(vars, lhs)) / (validator(vars, rhs))
-            else:
-                print("division operator unhandled case")
-                return
 
         # modulo operator
         elif operator.value == 5:
@@ -232,9 +203,6 @@ def validator(vars: dict, formula: Expression) -> bool:
                 return lhs.value % (validator(vars, rhs))
             elif isinstance(lhs, Expression) and isinstance(rhs, Expression):
                 return (validator(vars, lhs)) % (validator(vars, rhs))
-            else:
-                print("Modulo operator unhandled case")
-                return
 
         # Equality operator
         elif operator.value == 6:
@@ -256,9 +224,6 @@ def validator(vars: dict, formula: Expression) -> bool:
                 return (validator(vars, rhs)) == lhs.value
             elif isinstance(lhs, Expression) and isinstance(rhs, Expression):
                 return (validator(vars, lhs)) == (validator(vars, rhs))
-            else:
-                print("equal operator unhandled case")
-                return
 
         # Greater than operator
         elif operator.value == 7:
@@ -282,9 +247,6 @@ def validator(vars: dict, formula: Expression) -> bool:
                 return lhs.value > (validator(vars, rhs))
             elif isinstance(lhs, Expression) and isinstance(rhs, Expression):
                 return (validator(vars, lhs)) > (validator(vars, rhs))
-            else:
-                print("Greater than operator unhandled case")
-                return
 
         # Greater than or equal to
         elif operator.value == 8:
@@ -306,9 +268,6 @@ def validator(vars: dict, formula: Expression) -> bool:
                 return lhs.value >= (validator(vars, rhs))
             elif isinstance(lhs, Expression) and isinstance(rhs, Expression):
                 return (validator(vars, lhs)) >= (validator(vars, rhs))
-            else:
-                print("Greater than or equal operator unhandled case")
-                return
 
         # Less than operator
         elif operator.value == 9:
@@ -330,9 +289,6 @@ def validator(vars: dict, formula: Expression) -> bool:
                 return lhs.value < (validator(vars, rhs))
             elif isinstance(lhs, Expression) and isinstance(rhs, Expression):
                 return (validator(vars, lhs)) < (validator(vars, rhs))
-            else:
-                print("Less than operator unhandled case")
-                return
 
         # Less than or equal to operator
         elif operator.value == 10:
@@ -354,9 +310,7 @@ def validator(vars: dict, formula: Expression) -> bool:
                 return lhs.value <= (validator(vars, rhs))
             elif isinstance(lhs, Expression) and isinstance(rhs, Expression):
                 return (validator(vars, lhs)) <= (validator(vars, rhs))
-            else:
-                print("Less than or equal operator unhandled case")
-                return
+
         # And operator
         elif operator.value == 11:
             if isinstance(lhs, BoolConst) and isinstance(rhs, BoolConst):
@@ -379,9 +333,6 @@ def validator(vars: dict, formula: Expression) -> bool:
                 lhs = validator(vars, lhs)
                 rhs = validator(vars, rhs)
                 return And(lhs, rhs)
-            else:
-                print("And operator unhandled case")
-                return
 
         # Or operator
         elif operator.value == 12:
@@ -403,9 +354,6 @@ def validator(vars: dict, formula: Expression) -> bool:
                 return Or(vars[lhs.name], validator(vars, rhs))
             elif isinstance(lhs, Expression) and isinstance(rhs, Expression):
                 return Or(validator(vars, lhs), validator(vars, rhs))
-            else:
-                print("Or operator unhandled case")
-                return
 
         # not equal operator
         elif operator.value == 13:
@@ -427,12 +375,6 @@ def validator(vars: dict, formula: Expression) -> bool:
                 return (validator(vars, rhs)) != lhs.value
             elif isinstance(lhs, Expression) and isinstance(rhs, Expression):
                 return (validator(vars, lhs)) != (validator(vars, rhs))
-            else:
-                print("not equal operator unhandled case")
-                return
-        else:
-            print("Case unaccounted for")
-            return
 
 
 def create_var_dict(varList: list) -> dict:
