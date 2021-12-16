@@ -305,6 +305,10 @@ class Synthesizer():
                         # We've tried every possible hole_completion
                         # return a dummy data (last output value) instead
                         res_expr = self.last_output[hole_name]
+                        if res_expr is None:
+                            res_expr = self.constant[hole_name][main_prod_name][0]
+                            if isinstance(res_expr, GrammarInteger):
+                                res_expr = IntConst(1)
                         break
                     else:
                         # A do_while loop prevent the preventing VarExpr without constant
