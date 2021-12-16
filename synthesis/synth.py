@@ -74,8 +74,6 @@ class Synthesizer():
         self.prerecursive, self.constant = self.preprocess()
         self.recursive = copy.deepcopy(self.prerecursive)
 
-
-
     def preprocess(self):
         # Dictionary using hole.var.name as key, rule.symbol.name as second key
         # storing all recursive expression for expand
@@ -129,7 +127,6 @@ class Synthesizer():
             self.outputs[hole_name] = []
             self.outputs[hole_name].extend(constant[hole_name][main_prod_name])
 
-
             # Initialize self.last_output
             self.last_output[hole_name] = None
 
@@ -168,10 +165,10 @@ class Synthesizer():
         for var in final_constraint_expr.uses():
             if not var.name.startswith('Int_'):
                 if var.type.value == 1:
-                    #Int
+                    # Int
                     input_var.append(Int(var.name))
                 else:
-                    #Bool
+                    # Bool
                     input_var.append(Bool(var.name))
 
         s = Solver()
@@ -179,12 +176,12 @@ class Synthesizer():
         x = Int('INTEGER')
         clauses.append(x / 0 == 0)
         clauses.append(x % 0 == 0)
- 
+
         if input_var:
             s.add(ForAll(input_var, And(clauses)))
         else:
             s.add(And(clauses))
-        
+
         # Set a 0.5 second timer on z3 solver
         s.set("timeout", 500)
 
@@ -270,7 +267,7 @@ class Synthesizer():
             # Substitute recursively on both side
             for lhs_expr in self.substitute(recur.left_operand, hole_name):
                 for rhs_expr in self.substitute(recur.right_operand, hole_name):
-                    if not (str(lhs_expr) == str(rhs_expr) and recur.operator.value in [6,10,11,12,13]):
+                    if not (str(lhs_expr) == str(rhs_expr) and recur.operator.value in [11, 12]):
                         result.append(BinaryExpr(recur.operator, lhs_expr, rhs_expr))
                     # Similarly, some simple pruning can be added here
 
@@ -317,10 +314,6 @@ class Synthesizer():
                             currRecur = self.recursive[hole_name][main_prod_name][self.recurIdx[hole_name]]
                             new_recurs = self.expand(currRecur, hole_name)
 
-                            # # Check duplicate
-                            # for new_recur in new_recurs:
-                            #     if not duplicate(new_recur, self.recursive[hole_name][main_prod_name]):
-                            #         self.recursive[hole_name][main_prod_name].append(new_recur)
                             self.recursive[hole_name][main_prod_name].extend(new_recurs)
 
                             # Update self.recurIdx
@@ -352,12 +345,13 @@ class Synthesizer():
                 # put all constants in front of all vars
                 i = 0
                 while i < len(self.constant[hole][prod]):
-                    if not (isinstance(self.constant[hole][prod][i], IntConst) or isinstance(self.constant[hole][prod][i], BoolConst)):
+                    if not (isinstance(self.constant[hole][prod][i], IntConst) or
+                            isinstance(self.constant[hole][prod][i], BoolConst)):
                         # put const at the beginning of the list
                         var = self.constant[hole][prod].pop(i)
                         self.constant[hole][prod].insert(0, var)
                     i += 1
-        
+
         res = self.synth_main(1)
         self.constant = constant_save
         return res
@@ -376,7 +370,8 @@ class Synthesizer():
                 # put all constants in front of all vars
                 i = 0
                 while i < len(self.constant[hole][prod]):
-                    if isinstance(self.constant[hole][prod][i], IntConst) or isinstance(self.constant[hole][prod][i], BoolConst):
+                    if (isinstance(self.constant[hole][prod][i], IntConst) or
+                            isinstance(self.constant[hole][prod][i], BoolConst)):
                         # put const at the beginning of the list
                         const = self.constant[hole][prod].pop(i)
                         self.constant[hole][prod].insert(0, const)
