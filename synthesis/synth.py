@@ -288,7 +288,7 @@ class Synthesizer():
 
         return result
 
-    def synth_main(self, method: int) -> Mapping[str, Expression]:
+    def synth_main(self) -> Mapping[str, Expression]:
         res = {}
 
         for hole in self.ast.holes:
@@ -360,7 +360,7 @@ class Synthesizer():
                         self.constant[hole][prod].insert(0, var)
                     i += 1
 
-        res = self.synth_main(1)
+        res = self.synth_main()
         self.constant = constant_save
         return res
 
@@ -385,7 +385,7 @@ class Synthesizer():
                         const = self.constant[hole][prod].pop(i)
                         self.constant[hole][prod].insert(0, const)
                     i += 1
-        res = self.synth_main(2)
+        res = self.synth_main()
         self.constant = constant_save
         return res
 
@@ -395,4 +395,4 @@ class Synthesizer():
         to an expression (method 3).
         **A BFS algorithm. The order for evaluation depends on the order of the production rules**
         """
-        return self.synth_main(3)
+        return self.synth_main()
