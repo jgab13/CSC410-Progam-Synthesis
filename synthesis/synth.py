@@ -75,6 +75,10 @@ class Synthesizer():
         self.recursive = copy.deepcopy(self.prerecursive)
 
     def preprocess(self):
+        """
+        Preprocess to fill self.recursive and self.constant dicts with the
+        recursive rule or constant rule respectively
+        """
         # Dictionary using hole.var.name as key, rule.symbol.name as second key
         # storing all recursive expression for expand
         recursive = {}
@@ -336,7 +340,11 @@ class Synthesizer():
         """
         Returns a map from each hole id in the program `self.ast`
         to an expression (method 1).
-        **TODO: write a description of your approach in this method.**
+        **
+        A variable first algorithm. Variables are priortized over constants and will be evaluated first.
+        constants will also get evaluated right after all the constants so that the potential correct hole completion
+        won't be missed.
+        **
         """
         # make it variable first
         constant_save = self.constant.copy()
@@ -355,13 +363,14 @@ class Synthesizer():
         res = self.synth_main(1)
         self.constant = constant_save
         return res
-        # raise Exception("Synth.Synthesizer.synth_method_1 is not implemented.")
 
     def synth_method_2(self,) -> Mapping[str, Expression]:
         """
         Returns a map from each hole id in the program `self.ast`
         to an expression (method 2).
-        **TODO: write a description of your approach in this method.**
+        **A constant first algorithm. constants are priortized over variables and will be evaluated first.
+        Variables will also get evaluated right after all the constants so that the potential correct hole completion
+        won't be missed. **
         """
         # make it constant first
         constant_save = self.constant.copy()
@@ -379,14 +388,11 @@ class Synthesizer():
         res = self.synth_main(2)
         self.constant = constant_save
         return res
-        # raise Exception("Synth.Synthesizer.synth_method_2 is not implemented.")
 
     def synth_method_3(self,) -> Mapping[str, Expression]:
         """
         Returns a map from each hole id in the program `self.ast`
         to an expression (method 3).
-        **TODO: write a description of your approach in this method.**
+        **A BFS algorithm. The order for evaluation depends on the order of the production rules**
         """
-        # TODO : complete this method
         return self.synth_main(3)
-        raise Exception("Synth.synth_method_3 is not implemented.")
