@@ -125,6 +125,13 @@ def create_grammarint_expr(expr: Expression, counter: List[int]):
 
 
 def sub_int(model, expr: Expression) -> Expression:
+    """
+    Subsitute a model from z3 solver into a expression.
+    The name of the variables in model needs to be the
+    same as the name in VarExpr.
+    Pre-condition: expr should only contains VarExpr starts with
+    'Int_', where it represents a GrammarInteger.
+    """
     if isinstance(expr, IntConst):
         return expr
     elif isinstance(expr, BoolConst):
@@ -133,6 +140,7 @@ def sub_int(model, expr: Expression) -> Expression:
         if (expr.var.name.startswith('Int_')):
             res = model[Int(expr.name)]
             if (res is None):
+                # The solution is an arbitrary integer
                 res = 0
             else:
                 res = res.as_long()
