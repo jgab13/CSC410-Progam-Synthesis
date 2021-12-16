@@ -398,6 +398,10 @@ class Synthesizer():
         """
         Returns a map from each hole id in the program `self.ast`
         to an expression (method 3).
-        **A BFS algorithm. The order for evaluation depends on the order of the production rules**
+        **This search algorithm uses BFS to expand the rules for each production rule, starting with primitives such as
+        constants and variables. Then it builds recursive expressions based on these primitives and the process continues
+        as increasingly nested recursive expressions are expanded and added to the queue. Simple pruning is used to remove
+        unnecessary redundant expressions such as 'x1 && x1' or 'x1 || x1'. Additionally, we use z3 on any expression that
+        contains a grammar integer to find a satisfying assignment.**
         """
         return self.synth_main()
