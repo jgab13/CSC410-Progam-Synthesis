@@ -289,6 +289,9 @@ class Synthesizer():
         return result
 
     def synth_main(self) -> Mapping[str, Expression]:
+        """
+        The main algorithm method for synthesising.
+        """
         res = {}
 
         for hole in self.ast.holes:
@@ -328,6 +331,8 @@ class Synthesizer():
 
                 res_expr = self.outputs[hole_name].pop(0)
 
+                # Check if a GrammarInt is in the expression
+                # Having GrammarInt in the expression is the only reason of a False in is_pure_expression check
                 if not self.ast.is_pure_expression(res_expr):
                     res_expr = self.grammarIntSolver(res_expr, hole_name)
 
