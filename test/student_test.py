@@ -12,14 +12,14 @@ ITERATIONS_LIMIT = 100000
 
 
 # function for synth test
-def main_loop_synth_check(method_num, filename):
+def main_loop_synth_check(method_num, filename, iter_limit=ITERATIONS_LIMIT):
     # Parse the input file into an AST
     ast = parse(filename)
     # Initialize a Synthesizer with it
     synt = Synthesizer(ast)
     # Iterate until a solution is found or iteration limit is reached
     iteration = 0
-    while iteration < ITERATIONS_LIMIT:
+    while iteration < iter_limit:
         iteration += 1
         # At each call of the methods of the synthesizer a new
         # hole completion should be returned.
@@ -379,32 +379,6 @@ class TestStudent(unittest.TestCase):
 
         self.assertTrue(is_valid(final_constraint_expr))
 
-    def test_verif_complex2(self):
-        """
-        test to check a rather complicated case for verification
-        """
-        filename = '%s/examples/student/verif/complex.paddle' % Path(
-            __file__).parent.parent.absolute()
-        if not os.path.exists(filename):
-            raise Exception(
-                "TestEval is looking for %s. Make sure file exists." % filename)
-
-        try:
-            ast = parse(filename)
-        except:
-            self.assertFalse(
-                True, "Exception was raised when parsing %s" % filename)
-        # Evaluate from empty
-        try:
-            ev = Evaluator({})
-            final_constraint_expr = ev.evaluate(ast)
-        except:
-            self.assertFalse(
-                True, "Exception was raised when parsing %s" % filename)
-        # Verify
-
-        self.assertFalse(is_valid(final_constraint_expr))
-
     # Enumerating Programs Test
     def test_synth_sum(self):
         """
@@ -441,13 +415,13 @@ class TestStudent(unittest.TestCase):
             raise Exception(
                 "TestSynth is looking for %s, which was in the starter code.\
                      Make sure file exists." % filename)
-        r1 = main_loop_synth_check(1, filename)
+        r1 = main_loop_synth_check(1, filename, 1000)
         self.assertFalse(
             r1, msg="Method 1 failed to synthesize a solution for %s." % filename)
-        r2 = main_loop_synth_check(2, filename)
+        r2 = main_loop_synth_check(2, filename, 1000)
         self.assertFalse(
             r2, msg="Method 2 failed to synthesize a solution for %s." % filename)
-        r3 = main_loop_synth_check(3, filename)
+        r3 = main_loop_synth_check(3, filename, 1000)
         self.assertFalse(
             r3, msg="Method 3 failed to synthesize a solution for %s." % filename)
 

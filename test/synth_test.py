@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 
 # A smaller limit for the tests.
-ITERATIONS_LIMIT = 1000
+ITERATIONS_LIMIT = 10000
 
 
 def main_loop_synth_check(method_num, filename):
