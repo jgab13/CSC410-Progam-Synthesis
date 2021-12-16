@@ -17,7 +17,7 @@ Nanqi Liu, liunanqi
 
 Jiongan worked on testing, style, documentation and synth method helper functions.
 Jonathan worked on symbol eval, verifier and synth method helper functions.
-Nanqi worked on synth method functions. 
+Nanqi worked on synth method functions.
 
 ---
 
